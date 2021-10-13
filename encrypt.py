@@ -65,7 +65,15 @@ def generate_so_file(cipher_key: str, private_key: str):
     loader_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
     setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
-    args = ['python', setup_file_path.as_posix(), 'build_ext', '--inplace']
+    args = ['python', setup_file_path.as_posix(), 'build_ext']
+    ret = subprocess.run(args, shell=False, encoding='utf-8')
+    if ret.returncode == 0:
+        pass
+    args = [
+        'pyminifier', '--obfuscate', '--replacement-length', '20', '-o',
+        loader_file_path.as_posix(),
+        loader_file_path.as_posix()
+    ]
     ret = subprocess.run(args, shell=False, encoding='utf-8')
     if ret.returncode == 0:
         pass
