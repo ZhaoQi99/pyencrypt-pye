@@ -26,8 +26,8 @@ def can_encrypt(path: Path) -> bool:
     return True
 
 
-def encrypt_key(key: str) -> str:
-    ascii_ls = [ord(x) for x in key]
+def encrypt_key(key: bytes) -> str:
+    ascii_ls = [ord(x) for x in key.decode()]
     numbers = generate_rsa_number(2048)
     e, n = numbers['e'], numbers['n']
     cipher_ls = list()
@@ -55,5 +55,5 @@ def encrypt(dirname: str, delete_origin: bool):
 if __name__ == '__main__':
     # encrypt('encrypt.py',False)
     key = generate_aes_key()
-    cipher_key, d, n = encrypt_key(key.decode())
+    cipher_key, d, n = encrypt_key(key)
     assert decrypt_key(cipher_key, n, d) == key.decode()
