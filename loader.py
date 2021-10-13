@@ -6,17 +6,17 @@ from importlib.machinery import ModuleSpec
 from importlib.util import spec_from_loader
 from pathlib import Path
 from typing import Sequence, Union
-from decrypt import decrypt_file,decrypt_key
+from decrypt import *
 
 
 _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
 
 PRIVATE_KEY = ''
-cipher_key = ''
+CIPHER_KEY = ''
 
 PRIVATE_N,PRIVATE_D = PRIVATE_KEY.split('O',1)
-AES_KEY = decrypt_key(cipher_key, PRIVATE_N, PRIVATE_D)
+AES_KEY = decrypt_key(CIPHER_KEY, PRIVATE_N, PRIVATE_D)
 
 class EncryptFileLoader(abc.SourceLoader):
     def __init__(self,path) -> None:

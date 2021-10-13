@@ -1,10 +1,13 @@
+import os
+import subprocess
+from pathlib import Path
+
 from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
-import os
-from generate import generate_aes_key, generate_rsa_number
-from pathlib import Path
-from ntt import ntt
+
 from decrypt import decrypt_key
+from generate import generate_aes_key, generate_rsa_number
+from ntt import ntt
 
 NOT_ALLOWED_ENCRYPT_FILES = ['wsgi.py', 'manage.py']
 
@@ -37,6 +40,37 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
+def generate_so_file(cipher_key: str, private_key: str):
+    path = Path(os.path.abspath(__file__)).parent
+
+    decrypt_source_ls = list()
+    need_import_files = ['ntt.py', 'decrypt.py']
+    for file in need_import_files:
+        file_path = path / file
+        decrypt_source_ls.append(file_path.read_text().replace(
+            'from ntt import intt', ''))
+
+    loader_source_path = path / 'loader.py'
+    loader_source = loader_source_path.read_text().replace(
+        "PRIVATE_KEY = ''", f"PRIVATE_KEY = '{private_key}'",
+        1).replace("CIPHER_KEY = ''", f"CIPHER_KEY = '{cipher_key}'",
+                   1).replace("from decrypt import *", '')
+
+    loader_file_dir = Path(os.getcwd()) / 'encrypt'
+    loader_file_dir.mkdir(exist_ok=True)
+    loader_file_path = loader_file_dir / 'loader.py'
+    loader_file_path.touch(exist_ok=True)
+
+    decrypt_source = '\n'.join(decrypt_source_ls)
+    loader_file_path.write_text(f"{decrypt_source}\n{loader_source}")
+
+    setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
+    args = ['python', setup_file_path.as_posix(), 'build_ext', '--inplace']
+    ret = subprocess.run(args, shell=False, encoding='utf-8')
+    if ret.returncode == 0:
+        pass
+
+
 def encrypt(dirname: str, delete_origin: bool):
     p = Path(dirname)
     key = generate_aes_key()
@@ -49,11 +83,13 @@ def encrypt(dirname: str, delete_origin: bool):
             if can_encrypt(path):
                 _encrypt_file(path, key, delete_origin)
 
-    cipher_key, d, n = encrypt_key(key) # 需要放进导入器中
+    cipher_key, d, n = encrypt_key(key)  # 需要放进导入器中
+    private_key = f'{n}O{d}'
+    generate_so_file(cipher_key, private_key)
 
 
 if __name__ == '__main__':
-    # encrypt('encrypt.py',False)
+    encrypt('generate.py', False)
     key = generate_aes_key()
     cipher_key, d, n = encrypt_key(key)
     assert decrypt_key(cipher_key, n, d) == key.decode()
