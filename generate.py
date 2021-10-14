@@ -1,8 +1,9 @@
-from cryptography.fernet import Fernet
 from Crypto.PublicKey import RSA
+import base64
+import os
 
-def generate_aes_key():
-    return Fernet.generate_key()
+def generate_aes_key(size:str = 32) -> str:
+    return base64.b64encode(os.urandom(size)).decode()
 
 def generate_rsa_number(bits:int):
     r = RSA.generate(bits)
@@ -15,5 +16,5 @@ def generate_rsa_number(bits:int):
     }
 
 if __name__ == '__main__':
-    print(generate_aes_key())
+    print(generate_aes_key(32))
     print(generate_rsa_number(2048))

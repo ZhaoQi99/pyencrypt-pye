@@ -3,8 +3,8 @@ import subprocess
 from pathlib import Path
 
 from Crypto.PublicKey import RSA
-from cryptography.fernet import Fernet
 
+from aes import aes_encrypt
 from decrypt import decrypt_key
 from generate import generate_aes_key, generate_rsa_number
 from ntt import ntt
@@ -14,7 +14,7 @@ NOT_ALLOWED_ENCRYPT_FILES = ['wsgi.py', 'manage.py']
 
 def _encrypt_file(path: Path, key: bytes, delete_origin: bool) -> None:
     file_data = path.read_bytes()
-    encrypted_data = Fernet(key).encrypt(file_data)
+    encrypted_data = aes_encrypt(file_data,key)
     new_path = path.parent / f'{path.stem}.pye'
     new_path.write_bytes(encrypted_data)
     if delete_origin:
@@ -44,11 +44,11 @@ def generate_so_file(cipher_key: str, private_key: str):
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
-    need_import_files = ['ntt.py', 'decrypt.py']
+    need_import_files = ['ntt.py','aes.py','decrypt.py']
     for file in need_import_files:
         file_path = path / file
         decrypt_source_ls.append(file_path.read_text().replace(
-            'from ntt import intt', ''))
+            'from ntt import intt', '').replace('from aes import aes_decrypt',''))
 
     loader_source_path = path / 'loader.py'
     loader_source = loader_source_path.read_text().replace(

@@ -1,20 +1,26 @@
 import struct
 import copy
+import base64
 
 
-def _string_to_bytes(text:str):
-    return list(ord(c) for c in text)
+def _bytes_to_int(text:bytes):
+    return [int(x) for x in text]
 
-def _bytes_to_string(binary):
-    return "".join(chr(b) for b in binary)
+def _int_to_bytes(ls):
+    return bytes(ls)
 
 def _compact_word(word):
     return (word[0] << 24) | (word[1] << 16) | (word[2] << 8) | word[3]
 
-def add_to_16(text:str):
-    while len(text) % 16 != 0:
-        text += '0'
-    return text
+def add_padding(data:bytes) -> bytes:
+    pad = (16 - (len(data) % 16)) % 16
+    return data + bytes([pad] * pad)
+
+def strip_padding(data:bytes) -> bytes:
+    if len(data) % 16 != 0:
+        raise ValueError("invalid length")
+    pad = data[-1]
+    return data if pad > 16 else data[:-pad]
 
 # Based *largely* on the Rijndael implementation
 # See: http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
@@ -216,32 +222,59 @@ class AESModeOfOperationECB(AESBlockModeOfOperation):
 
     name = "Electronic Codebook (ECB)"
 
-    def encrypt(self, plaintext):
-        if len(plaintext.encode()) != 16:
-            raise ValueError('plaintext block must be 16 bytes')
+    def __init__(self, key:str):
+        super().__init__(base64.b64decode(key))
+    
+    def encrypt(self, data:bytes) -> bytes:
+        if len(data) != 16:
+            raise ValueError('plain block must be 16 bytes')
 
-        plaintext = _string_to_bytes(plaintext)
-        return _bytes_to_string(self._aes.encrypt(plaintext))
+        plain = _bytes_to_int(data)
+        return _int_to_bytes(self._aes.encrypt(plain))
 
-    def decrypt(self, ciphertext):
-        if len(ciphertext) != 16:
-            raise ValueError('ciphertext block must be 16 bytes')
+    def decrypt(self, data:bytes) -> bytes:
+        if len(data) != 16:
+            raise ValueError('cipher block must be 16 bytes')
 
-        ciphertext = _string_to_bytes(ciphertext)
-        return _bytes_to_string(self._aes.decrypt(ciphertext))
+        cipher = _bytes_to_int(data)
+        return _int_to_bytes(self._aes.decrypt(cipher))
+
+
+def aes_encrypt(data:bytes,key:str) -> bytes:
+    data = add_padding(data)
+    cipher = list()
+    aes = AESModeOfOperationECB(key)
+    for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
+        cipher.append(aes.encrypt(x))
+    return b''.join(cipher)
+
+
+def aes_decrypt(data:bytes,key:str) -> bytes:
+    plain = list()
+    if len(data) % 16 != 0 :
+        raise Exception('invalid length')
+    aes = AESModeOfOperationECB(key)
+    for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
+        plain.append(aes.decrypt(x))
+    return strip_padding(b''.join(plain))
 
 
 if __name__ == '__main__':
-    plain = 'print(Hi)!a'
-    # plain = '#中中'
-    # plain = '"""大大\n"""'
-
-    key = '38LTp8jvcGYHL_KlWZI2LUcDssZrL2gBSjBP-VKfQ04='[:16].encode()
+    plain = '你好!世界!'
+    key = 'tB9qW0YGlYIyBfTmuyQbm6AjPQa9gTKwO8j5H4IBf1A='
     aes = AESModeOfOperationECB(key)
-    plain = add_to_16(plain)
-    print(plain)
+    plain = add_padding(plain.encode())
+    print('plain',plain)
     cipher = aes.encrypt(plain)
-    print(cipher)
-    plain = aes.decrypt(cipher)
+    print('cipher',cipher)
+    plain = strip_padding(aes.decrypt(cipher))
     print(plain)
+    print(plain.decode())
+
+    with open('generate.py','rb') as f:
+        data = f.read()
+    cipher = aes_encrypt(data,key)
+    print(cipher)
+    plain = aes_decrypt(cipher,key)
+    print(plain.decode())
 
