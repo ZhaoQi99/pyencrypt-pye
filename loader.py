@@ -3,7 +3,7 @@ import sys
 import types
 from importlib import abc
 from importlib.machinery import ModuleSpec
-from importlib.util import spec_from_loader
+import importlib.util
 from pathlib import Path
 from typing import Sequence, Union
 from decrypt import *
@@ -44,7 +44,7 @@ class EncryptFileFinder(abc.MetaPathFinder):
         if not os.path.exists(file_path):
             return None
         loader = EncryptFileLoader(file_path)
-        return spec_from_loader(name=fullname, loader=loader, origin='origin-encrypt')
+        return importlib.util.spec_from_loader(name=fullname, loader=loader, origin='origin-encrypt')
 
 
 sys.meta_path.append(EncryptFileFinder())

@@ -64,19 +64,26 @@ def generate_so_file(cipher_key: str, private_key: str):
     decrypt_source = '\n'.join(decrypt_source_ls)
     loader_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
+    # Origin file
+    loader_origin_file_path = loader_file_dir / 'loader_origin.py'
+    loader_origin_file_path.touch(exist_ok=True)
+    loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
+
     setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
-    args = ['python', setup_file_path.as_posix(), 'build_ext']
-    ret = subprocess.run(args, shell=False, encoding='utf-8')
-    if ret.returncode == 0:
-        pass
     args = [
-        'pyminifier', '--obfuscate', '--replacement-length', '20', '-o',
+        'pyminifier', '--obfuscate-classes' ,'--obfuscate-import-methods', '--replacement-length', '20', '-o',
         loader_file_path.as_posix(),
         loader_file_path.as_posix()
     ]
     ret = subprocess.run(args, shell=False, encoding='utf-8')
     if ret.returncode == 0:
         pass
+
+    args = ['python', setup_file_path.as_posix(), 'build_ext']
+    ret = subprocess.run(args, shell=False, encoding='utf-8')
+    if ret.returncode == 0:
+        pass
+
 
 
 def encrypt(dirname: str, delete_origin: bool):
@@ -97,7 +104,7 @@ def encrypt(dirname: str, delete_origin: bool):
 
 
 if __name__ == '__main__':
-    encrypt('generate.py', False)
+    encrypt('flag.py', False)
     key = generate_aes_key()
     cipher_key, d, n = encrypt_key(key)
     assert decrypt_key(cipher_key, n, d) == key.decode()

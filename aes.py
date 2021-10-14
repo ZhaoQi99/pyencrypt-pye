@@ -243,9 +243,8 @@ class AESModeOfOperationECB(AESBlockModeOfOperation):
 def aes_encrypt(data:bytes,key:str) -> bytes:
     data = add_padding(data)
     cipher = list()
-    aes = AESModeOfOperationECB(key)
     for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
-        cipher.append(aes.encrypt(x))
+        cipher.append(AESModeOfOperationECB(key).encrypt(x))
     return b''.join(cipher)
 
 
@@ -253,21 +252,19 @@ def aes_decrypt(data:bytes,key:str) -> bytes:
     plain = list()
     if len(data) % 16 != 0 :
         raise Exception('invalid length')
-    aes = AESModeOfOperationECB(key)
     for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
-        plain.append(aes.decrypt(x))
+        plain.append(AESModeOfOperationECB(key).decrypt(x))
     return strip_padding(b''.join(plain))
 
 
 if __name__ == '__main__':
     plain = '你好!世界!'
     key = 'tB9qW0YGlYIyBfTmuyQbm6AjPQa9gTKwO8j5H4IBf1A='
-    aes = AESModeOfOperationECB(key)
     plain = add_padding(plain.encode())
     print('plain',plain)
-    cipher = aes.encrypt(plain)
+    cipher = AESModeOfOperationECB(key).encrypt(plain)
     print('cipher',cipher)
-    plain = strip_padding(aes.decrypt(cipher))
+    plain = strip_padding(AESModeOfOperationECB(key).decrypt(cipher))
     print(plain)
     print(plain.decode())
 
