@@ -3,7 +3,7 @@ import base64
 import os
 
 def generate_aes_key(size:str = 32) -> str:
-    return base64.b64encode(os.urandom(size)).decode()
+    return base64.b64encode(os.urandom(size))
 
 def generate_rsa_number(bits:int):
     r = RSA.generate(bits)

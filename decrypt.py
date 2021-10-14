@@ -2,9 +2,7 @@ from aes import aes_decrypt
 from ntt import intt
 
 
-def decrypt_key(cipher_key: str, n: str, d: str) -> str:
-    n = int(n)
-    d = int(d)
+def decrypt_key(cipher_key: str, n: int, d: int) -> str:
     plain_ls = list()
     for num in map(int, cipher_key.split('O')):
         plain_ls.append(pow(num, d, n))

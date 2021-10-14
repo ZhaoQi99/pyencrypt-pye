@@ -7,7 +7,7 @@ from importlib.util import spec_from_loader
 from pathlib import Path
 from typing import Sequence, Union
 from decrypt import *
-
+import traceback
 
 _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
@@ -16,7 +16,7 @@ PRIVATE_KEY = ''
 CIPHER_KEY = ''
 
 PRIVATE_N,PRIVATE_D = PRIVATE_KEY.split('O',1)
-AES_KEY = decrypt_key(CIPHER_KEY, PRIVATE_N, PRIVATE_D)
+AES_KEY = decrypt_key(CIPHER_KEY, int(PRIVATE_N), int(PRIVATE_D))
 
 class EncryptFileLoader(abc.SourceLoader):
     def __init__(self,path) -> None:
@@ -29,8 +29,9 @@ class EncryptFileLoader(abc.SourceLoader):
         with open(self.path, 'rb') as f:
             file_data = f.read()
         try:
-            return decrypt_file(file_data)
+            return decrypt_file(file_data,AES_KEY)
         except Exception:
+            traceback.print_exc()
             return b''
 
 
