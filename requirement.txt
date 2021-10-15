@@ -1,0 +1,3 @@
+Cython==0.29.24
+pycrypto==2.6.1
+pyminifier==2.1
