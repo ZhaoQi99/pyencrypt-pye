@@ -56,16 +56,16 @@ def generate_so_file(cipher_key: str, private_key: str):
         1).replace("CIPHER_KEY = ''", f"CIPHER_KEY = '{cipher_key}'",
                    1).replace("from decrypt import *", '')
 
-    loader_file_dir = Path(os.getcwd()) / 'encrypt'
-    loader_file_dir.mkdir(exist_ok=True)
-    loader_file_path = loader_file_dir / 'loader.py'
+    temp_dir = Path(os.getcwd()) / 'encrypted'
+    temp_dir.mkdir(exist_ok=True)
+    loader_file_path = temp_dir / 'loader.py'
     loader_file_path.touch(exist_ok=True)
 
     decrypt_source = '\n'.join(decrypt_source_ls)
     loader_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
     # Origin file
-    loader_origin_file_path = loader_file_dir / 'loader_origin.py'
+    loader_origin_file_path = temp_dir / 'loader_origin.py'
     loader_origin_file_path.touch(exist_ok=True)
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
@@ -78,9 +78,9 @@ def generate_so_file(cipher_key: str, private_key: str):
     ret = subprocess.run(args, shell=False, encoding='utf-8')
     if ret.returncode == 0:
         pass
-
-    args = ['python', setup_file_path.as_posix(), 'build_ext']
-    ret = subprocess.run(args, shell=False, encoding='utf-8')
+    
+    args = ['python', setup_file_path.as_posix(), 'build_ext','--build-lib', temp_dir.as_posix()]
+    ret = subprocess.run(args, shell=False, stderr=subprocess.PIPE,encoding='utf-8')
     if ret.returncode == 0:
         pass
 
@@ -90,6 +90,7 @@ def encrypt(dirname: str, delete_origin: bool):
     p = Path(dirname)
     key = generate_aes_key()
     if p.is_file():
+        print(False)
         if can_encrypt(p):
             _encrypt_file(p, key, delete_origin)
     else:
