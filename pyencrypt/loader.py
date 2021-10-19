@@ -6,7 +6,7 @@ from importlib.machinery import ModuleSpec
 import importlib.util
 from pathlib import Path
 from typing import Sequence, Union
-from decrypt import *
+from pyencrypt.decrypt import *
 import traceback
 
 _Path = Union[bytes, str]

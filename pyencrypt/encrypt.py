@@ -1,15 +1,14 @@
 import os
 import subprocess
 from pathlib import Path
+from typing import List
 
-from Crypto.PublicKey import RSA
+from pyencrypt.aes import aes_encrypt
+from pyencrypt.decrypt import decrypt_key
+from pyencrypt.generate import generate_aes_key, generate_rsa_number
+from pyencrypt.ntt import ntt
 
-from aes import aes_encrypt
-from decrypt import decrypt_key
-from generate import generate_aes_key, generate_rsa_number
-from ntt import ntt
-
-NOT_ALLOWED_ENCRYPT_FILES = ['wsgi.py', 'manage.py']
+NOT_ALLOWED_ENCRYPT_FILES = ['wsgi.py', 'manage.py','__init__.py']
 
 
 def _encrypt_file(path: Path, key: bytes, delete_origin: bool) -> None:
@@ -48,13 +47,13 @@ def generate_so_file(cipher_key: str, private_key: str):
     for file in need_import_files:
         file_path = path / file
         decrypt_source_ls.append(file_path.read_text().replace(
-            'from ntt import intt', '').replace('from aes import aes_decrypt',''))
+            'from pyencrypt.ntt import intt', '').replace('from pyencrypt.aes import aes_decrypt',''))
 
     loader_source_path = path / 'loader.py'
     loader_source = loader_source_path.read_text().replace(
         "PRIVATE_KEY = ''", f"PRIVATE_KEY = '{private_key}'",
         1).replace("CIPHER_KEY = ''", f"CIPHER_KEY = '{cipher_key}'",
-                   1).replace("from decrypt import *", '')
+                   1).replace("from pyencrypt.decrypt import *", '')
 
     temp_dir = Path(os.getcwd()) / 'encrypted'
     temp_dir.mkdir(exist_ok=True)
@@ -78,7 +77,7 @@ def generate_so_file(cipher_key: str, private_key: str):
     ret = subprocess.run(args, shell=False, encoding='utf-8')
     if ret.returncode == 0:
         pass
-    
+
     args = ['python', setup_file_path.as_posix(), 'build_ext','--build-lib', temp_dir.as_posix()]
     ret = subprocess.run(args, shell=False, stderr=subprocess.PIPE,encoding='utf-8')
     if ret.returncode == 0:
@@ -86,26 +85,18 @@ def generate_so_file(cipher_key: str, private_key: str):
 
 
 
-def encrypt(dirname: str, delete_origin: bool):
-    p = Path(dirname)
-    key = generate_aes_key()
-    if p.is_file():
-        print(False)
+def encrypt(files: List[Path], delete_origin: bool, key: str = None):
+    for p in files:
         if can_encrypt(p):
             _encrypt_file(p, key, delete_origin)
-    else:
-        files = filter(lambda x: x.name != '__init__.py', p.glob('**/*.py'))
-        for path in files:
-            if can_encrypt(path):
-                _encrypt_file(path, key, delete_origin)
 
-    cipher_key, d, n = encrypt_key(key)  # 需要放进导入器中
+    cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
     private_key = f'{n}O{d}'
     generate_so_file(cipher_key, private_key)
 
 
 if __name__ == '__main__':
-    encrypt('flag.py', False)
     key = generate_aes_key()
+    encrypt(Path('flag.py'), False,key.decode())
     cipher_key, d, n = encrypt_key(key)
     assert decrypt_key(cipher_key, n, d) == key.decode()
