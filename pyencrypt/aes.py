@@ -13,14 +13,16 @@ def _compact_word(word):
     return (word[0] << 24) | (word[1] << 16) | (word[2] << 8) | word[3]
 
 def add_padding(data:bytes) -> bytes:
-    pad = (16 - (len(data) % 16)) % 16
+    pad = 16 - len(data) % 16
     return data + bytes([pad] * pad)
 
 def strip_padding(data:bytes) -> bytes:
     if len(data) % 16 != 0:
         raise ValueError("invalid length")
     pad = data[-1]
-    return data if pad > 16 else data[:-pad]
+    if pad > 16:
+        raise ValueError("invalid padding byte")
+    return data[:-pad]
 
 # Based *largely* on the Rijndael implementation
 # See: http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
