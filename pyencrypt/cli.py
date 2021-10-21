@@ -58,20 +58,26 @@ Decryption completed successfully. Your origin source code has be put: {path}\
               '--in-place',
               'delete',
               default=False,
-              help='make changes to files in place')
+              help='make changes to files in place',is_flag=True)
 @click.option('-k',
               '--key',
               default=None,
               help=KEY_OPTION_HELP,
               type=click.STRING)
+@click.option('-y',
+              '--yes',
+              default=False,
+              help='yes',
+              is_flag=True)
 @click.help_option('-h', '--help')
-def encrypt_command(pathname, delete, key):
+def encrypt_command(pathname, delete, key,yes):
     """Encrypt your python code"""
     if key is None:
         key = generate_aes_key().decode()
         click.echo(f'Your randomly encryption key is {key}')
 
-    click.confirm('Are you sure you want to encrypt your python file?',
+    if not yes:
+        click.confirm('Are you sure you want to encrypt your python file?',
                   abort=True)
     path = Path(pathname)
     work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
@@ -127,6 +133,7 @@ def decrypt_command(pathname, key):
         raise Exception(f'{path} is not a valid path.')
 
     click.echo(FINISH_DECRYPT_MSG.format(path=work_dir))
+
 
 if __name__ == '__main__':
     cli()
