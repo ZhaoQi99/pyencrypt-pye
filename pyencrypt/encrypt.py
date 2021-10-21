@@ -47,8 +47,8 @@ def generate_so_file(cipher_key: str, d: int, n:int):
 
     loader_source_path = path / 'loader.py'
     loader_source = loader_source_path.read_text().replace(
-        "PRIVATE_KEY = ''", f"PRIVATE_KEY = '{private_key}'",
-        1).replace("CIPHER_KEY = ''", f"CIPHER_KEY = '{cipher_key}'",
+        "__private_key = ''", f"__private_key = '{private_key}'",
+        1).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'",
                    1).replace("from pyencrypt.decrypt import *", '')
 
     temp_dir = Path(os.getcwd()) / 'encrypted'
