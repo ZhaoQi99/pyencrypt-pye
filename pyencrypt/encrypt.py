@@ -1,29 +1,24 @@
 import os
 import subprocess
 from pathlib import Path
-from typing import List
 
 from pyencrypt.aes import aes_encrypt
-from pyencrypt.decrypt import decrypt_key
-from pyencrypt.generate import generate_aes_key, generate_rsa_number
+from pyencrypt.generate import  generate_rsa_number
 from pyencrypt.ntt import ntt
 
-NOT_ALLOWED_ENCRYPT_FILES = ['wsgi.py', 'manage.py','__init__.py']
+NOT_ALLOWED_ENCRYPT_FILES = ['__init__.py',]
 
 
-def _encrypt_file(path: Path, key: bytes, delete_origin: bool) -> None:
-    file_data = path.read_bytes()
-    encrypted_data = aes_encrypt(file_data,key)
-    new_path = path.parent / f'{path.stem}.pye'
-    new_path.write_bytes(encrypted_data)
-    if delete_origin:
-        os.remove(path)
+def _encrypt_file(data: bytes, key: bytes,) -> None:
+    return aes_encrypt(data, key)
 
 
 def can_encrypt(path: Path) -> bool:
     if path.name in NOT_ALLOWED_ENCRYPT_FILES:
         return False
     if 'management/commands/' in path.as_posix():
+        return False
+    if path.suffix != '.py':
         return False
     return True
 
@@ -39,7 +34,8 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, private_key: str):
+def generate_so_file(cipher_key: str, d: int, n:int):
+    private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
@@ -85,18 +81,15 @@ def generate_so_file(cipher_key: str, private_key: str):
 
 
 
-def encrypt(files: List[Path], delete_origin: bool, key: str = None):
-    for p in files:
-        if can_encrypt(p):
-            _encrypt_file(p, key, delete_origin)
-
-    cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
-    private_key = f'{n}O{d}'
-    generate_so_file(cipher_key, private_key)
-
-
-if __name__ == '__main__':
-    key = generate_aes_key()
-    encrypt(Path('flag.py'), False,key.decode())
-    cipher_key, d, n = encrypt_key(key)
-    assert decrypt_key(cipher_key, n, d) == key.decode()
+def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
+    if not can_encrypt(path):
+        raise Exception(f"{path.name} can't be encrypted.")
+    encrypted_data = _encrypt_file(path.read_bytes(), key)
+    if new_path:
+        if new_path.suffix != '.pye':
+            raise Exception("Encrypted file path must be pye suffix.")
+        new_path.touch(exist_ok=True)
+        new_path.write_bytes(encrypted_data)
+    if delete_origin:
+        os.remove(path)
+    return encrypted_data

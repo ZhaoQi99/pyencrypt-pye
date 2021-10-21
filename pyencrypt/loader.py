@@ -26,10 +26,8 @@ class EncryptFileLoader(abc.SourceLoader):
         return f"{fullname.rsplit('.',1)[-1]}.pye"
 
     def get_data(self, path: _Path) -> bytes:
-        with open(self.path, 'rb') as f:
-            file_data = f.read()
         try:
-            return decrypt_file(file_data,AES_KEY)
+            return decrypt_file(Path(self.path),AES_KEY)
         except Exception:
             traceback.print_exc()
             return b''
