@@ -1,10 +1,10 @@
+import base64
 import os
 import shutil
 import sys
 from pathlib import Path
 
 import click
-
 from pyencrypt import __description__, __version__
 from pyencrypt.decrypt import decrypt_file
 from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key,
@@ -44,17 +44,24 @@ And then remove `encrypted` directory.
 Finally, add `import loader` at the top of your entry file.\
 """
 
+FINISH_DECRYPT_MSG = """
+Decryption completed successfully. Your origin source code has be put: {path}\
+"""
+
+FINISH_GENERATE_MSG = f"""
+Generate loader file successfully. Your loader file is located in {LAODER_FILE_NAME}
+"""
+
+
+def _check_key(key: str) -> bool:
+    return not (len(key) % 4 or len(base64.b64decode(key)) % 16)
+
 
 @click.group()
 @click.version_option(__version__, '--version', message=VERSION)
 @click.help_option('-h', '--help')
 def cli():
     pass
-
-
-FINISH_DECRYPT_MSG = """
-Decryption completed successfully. Your origin source code has be put: {path}\
-"""
 
 
 @cli.command(name='encrypt')
@@ -70,17 +77,19 @@ Decryption completed successfully. Your origin source code has be put: {path}\
               default=None,
               help=KEY_OPTION_HELP,
               type=click.STRING)
-@click.option('-y', '--yes', default=False, help='yes', is_flag=True)
+@click.confirmation_option(
+    prompt='Are you sure you want to encrypt your python file?',
+    help='Confirm the action without prompting')
 @click.help_option('-h', '--help')
-def encrypt_command(pathname, delete, key, yes):
+@click.pass_context
+def encrypt_command(ctx, pathname, delete, key):
     """Encrypt your python code"""
+    if key is not None and not _check_key(key):
+        ctx.fail(f'Your encryption key is invalid.')
     if key is None:
         key = generate_aes_key().decode()
         click.echo(f'Your randomly encryption key is {key}')
 
-    if not yes:
-        click.confirm('Are you sure you want to encrypt your python file?',
-                      abort=True)
     path = Path(pathname)
     work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
 
@@ -136,6 +145,22 @@ def decrypt_command(pathname, key):
         raise Exception(f'{path} is not a valid path.')
 
     click.echo(FINISH_DECRYPT_MSG.format(path=work_dir))
+
+
+@cli.command(name='generate')
+@click.option('-k',
+              '--key',
+              required=True,
+              help='Your encryption key.',
+              type=click.STRING)
+@click.pass_context
+def generate_loader(ctx, key):
+    """Generate loader file using specified key"""
+    if not _check_key(key):
+        ctx.fail(f'Your encryption key is invalid.')
+    cipher_key, d, n = encrypt_key(key.encode())
+    generate_so_file(cipher_key, d, n)
+    click.echo(FINISH_GENERATE_MSG)
 
 
 if __name__ == '__main__':

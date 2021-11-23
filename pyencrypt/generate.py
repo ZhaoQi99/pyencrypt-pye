@@ -4,7 +4,7 @@ import os
 from Crypto.PublicKey import RSA
 
 
-def generate_aes_key(size: str = 32) -> str:
+def generate_aes_key(size: int = 32) -> str:
     return base64.b64encode(os.urandom(size))
 
 
