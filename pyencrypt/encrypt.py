@@ -3,13 +3,18 @@ import subprocess
 from pathlib import Path
 
 from pyencrypt.aes import aes_encrypt
-from pyencrypt.generate import  generate_rsa_number
+from pyencrypt.generate import generate_rsa_number
 from pyencrypt.ntt import ntt
 
-NOT_ALLOWED_ENCRYPT_FILES = ['__init__.py',]
+NOT_ALLOWED_ENCRYPT_FILES = [
+    '__init__.py',
+]
 
 
-def _encrypt_file(data: bytes, key: bytes,) -> None:
+def _encrypt_file(
+    data: bytes,
+    key: bytes,
+) -> None:
     return aes_encrypt(data, key)
 
 
@@ -34,16 +39,17 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, d: int, n:int):
+def generate_so_file(cipher_key: str, d: int, n: int):
     private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
-    need_import_files = ['ntt.py','aes.py','decrypt.py']
+    need_import_files = ['ntt.py', 'aes.py', 'decrypt.py']
     for file in need_import_files:
         file_path = path / file
         decrypt_source_ls.append(file_path.read_text().replace(
-            'from pyencrypt.ntt import intt', '').replace('from pyencrypt.aes import aes_decrypt',''))
+            'from pyencrypt.ntt import intt',
+            '').replace('from pyencrypt.aes import aes_decrypt', ''))
 
     loader_source_path = path / 'loader.py'
     loader_source = loader_source_path.read_text().replace(
@@ -66,7 +72,8 @@ def generate_so_file(cipher_key: str, d: int, n:int):
 
     setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
     args = [
-        'pyminifier', '--obfuscate-classes' ,'--obfuscate-import-methods', '--replacement-length', '20', '-o',
+        'pyminifier', '--obfuscate-classes', '--obfuscate-import-methods',
+        '--replacement-length', '20', '-o',
         loader_file_path.as_posix(),
         loader_file_path.as_posix()
     ]
@@ -74,14 +81,23 @@ def generate_so_file(cipher_key: str, d: int, n:int):
     if ret.returncode == 0:
         pass
 
-    args = ['python', setup_file_path.as_posix(), 'build_ext','--build-lib', temp_dir.as_posix()]
-    ret = subprocess.run(args, shell=False, stderr=subprocess.PIPE,encoding='utf-8')
+    args = [
+        'python',
+        setup_file_path.as_posix(), 'build_ext', '--build-lib',
+        temp_dir.as_posix()
+    ]
+    ret = subprocess.run(args,
+                         shell=False,
+                         stderr=subprocess.PIPE,
+                         encoding='utf-8')
     if ret.returncode == 0:
         pass
 
 
-
-def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
+def encrypt_file(path: Path,
+                 key: str,
+                 delete_origin: bool = False,
+                 new_path: Path = None):
     if not can_encrypt(path):
         raise Exception(f"{path.name} can't be encrypted.")
     encrypted_data = _encrypt_file(path.read_bytes(), key)

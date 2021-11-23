@@ -63,3 +63,13 @@ Options:
 import loader
 from test import *
 ```
+
+## Development
+
+### Format Code
+
+```shell
+yapf --recursive -i pyencrypt 
+isort pyencrypt
+```
+

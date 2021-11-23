@@ -35,8 +35,7 @@ LAODER_FILE_NAME = "loader.cpython-{major}{minor}{abi}-{platform}.so".format(
     major=PYTHON_MAJOR,
     minor=PYTHON_MINOR,
     abi=sys.abiflags,
-    platform=sys.platform
-)
+    platform=sys.platform)
 
 FINISH_ENCRYPT_MSG = f"""
 Encryption completed successfully.
@@ -64,19 +63,16 @@ Decryption completed successfully. Your origin source code has be put: {path}\
               '--in-place',
               'delete',
               default=False,
-              help='make changes to files in place',is_flag=True)
+              help='make changes to files in place',
+              is_flag=True)
 @click.option('-k',
               '--key',
               default=None,
               help=KEY_OPTION_HELP,
               type=click.STRING)
-@click.option('-y',
-              '--yes',
-              default=False,
-              help='yes',
-              is_flag=True)
+@click.option('-y', '--yes', default=False, help='yes', is_flag=True)
 @click.help_option('-h', '--help')
-def encrypt_command(pathname, delete, key,yes):
+def encrypt_command(pathname, delete, key, yes):
     """Encrypt your python code"""
     if key is None:
         key = generate_aes_key().decode()
@@ -84,7 +80,7 @@ def encrypt_command(pathname, delete, key,yes):
 
     if not yes:
         click.confirm('Are you sure you want to encrypt your python file?',
-                  abort=True)
+                      abort=True)
     path = Path(pathname)
     work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
 
@@ -94,7 +90,8 @@ def encrypt_command(pathname, delete, key,yes):
     elif path.is_dir():
         work_dir.exists() and shutil.rmtree(work_dir)
         shutil.copytree(path, work_dir)
-        files = set(path.glob('**/*.py')) - set(path.glob(f'encrypted/**/*.py'))
+        files = set(path.glob('**/*.py')) - set(
+            path.glob(f'encrypted/**/*.py'))
         for file in files:
             if can_encrypt(file):
                 print(file)
