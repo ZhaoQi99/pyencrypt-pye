@@ -30,7 +30,13 @@ pyencrypt will generate encryption key randomly.
 
 """
 
-LAODER_FILE_NAME = f"loader.cpython-{''.join(map(str,sys.version_info[:2]))}m-{sys.platform}.so"
+PYTHON_MAJOR, PYTHON_MINOR = sys.version_info[:2]
+LAODER_FILE_NAME = "loader.cpython-{major}{minor}{abi}-{platform}.so".format(
+    major=PYTHON_MAJOR,
+    minor=PYTHON_MINOR,
+    abi=sys.abiflags,
+    platform=sys.platform
+)
 
 FINISH_ENCRYPT_MSG = f"""
 Encryption completed successfully.
