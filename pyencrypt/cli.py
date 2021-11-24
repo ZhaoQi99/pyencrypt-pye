@@ -88,7 +88,7 @@ def encrypt_command(ctx, pathname, delete, key):
         ctx.fail(f'Your encryption key is invalid.')
     if key is None:
         key = generate_aes_key().decode()
-        click.echo(f'Your randomly encryption key is {key}')
+        click.echo(f'Your randomly encryption 🔑 is {key}')
 
     path = Path(pathname)
     work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
@@ -101,12 +101,13 @@ def encrypt_command(ctx, pathname, delete, key):
         shutil.copytree(path, work_dir)
         files = set(path.glob('**/*.py')) - set(
             path.glob(f'encrypted/**/*.py'))
-        for file in files:
-            if can_encrypt(file):
-                print(file)
-                new_path = work_dir / file.relative_to(path)
-                new_path.unlink()
-                encrypt_file(file, key, delete, new_path.with_suffix('.pye'))
+        with click.progressbar(files, label='🔐 Encrypting') as bar:
+            for file in bar:
+                if can_encrypt(file):
+                    new_path = work_dir / file.relative_to(path)
+                    new_path.unlink()
+                    encrypt_file(file, key, delete,
+                                 new_path.with_suffix('.pye'))
     else:
         raise Exception(f'{path} is not a valid path.')
 
@@ -137,10 +138,10 @@ def decrypt_command(pathname, key):
         work_dir.exists() and shutil.rmtree(work_dir)
         shutil.copytree(path, work_dir)
         files = list(path.glob('**/*.pye'))
-        for file in files:
-            print(file)
-            new_path = work_dir / file.relative_to(path)
-            decrypt_file(file, key, new_path)
+        with click.progressbar(files, label='🔓 Decrypting') as bar:
+            for file in files:
+                new_path = work_dir / file.relative_to(path)
+                decrypt_file(file, key, new_path)
     else:
         raise Exception(f'{path} is not a valid path.')
 
