@@ -32,7 +32,7 @@ Options:
   -i, --in-place  make changes to files in place
   -k, --key TEXT  Your encryption key.If you don‘t specify key, pyencrypt will
                   generate encryption key randomly.
-  -y, --yes       yes
+  --yes           Automatically answer yes for confirm questions.
   -h, --help      Show this message and exit.
 ```
 ### Decrypt
@@ -56,6 +56,10 @@ Options:
 ### Decrypt
 ```shell
 ~$ pyencrypt decrypt -k xxx test.pye
+```
+### Generate
+```shell
+~$ pyencrypt generate -k xxx
 ```
 
 ### Entry File

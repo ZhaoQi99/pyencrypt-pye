@@ -79,7 +79,7 @@ def cli():
               type=click.STRING)
 @click.confirmation_option(
     prompt='Are you sure you want to encrypt your python file?',
-    help='Confirm the action without prompting')
+    help='Automatically answer yes for confirm questions.')
 @click.help_option('-h', '--help')
 @click.pass_context
 def encrypt_command(ctx, pathname, delete, key):
