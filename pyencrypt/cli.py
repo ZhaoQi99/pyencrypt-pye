@@ -153,6 +153,7 @@ def decrypt_command(pathname, key):
               required=True,
               help='Your encryption key.',
               type=click.STRING)
+@click.help_option('-h', '--help')
 @click.pass_context
 def generate_loader(ctx, key):
     """Generate loader file using specified key"""

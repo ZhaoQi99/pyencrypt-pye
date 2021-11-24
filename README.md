@@ -21,6 +21,20 @@ pip install git+https://github.com/ZhaoQi99/pyencrypt-pye.git
 ✨🍰✨
 ```
 ## Usage
+
+```shell
+Usage: pyencrypt [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version   Show the version and exit.
+  -h, --help  Show this message and exit.
+
+Commands:
+  decrypt   Decrypt encrypted pye file
+  encrypt   Encrypt your python code
+  generate  Generate loader file using specified key
+```
+
 ### Encrypt
 ```shell
 ~$ pyencrypt encrypt -h
@@ -46,6 +60,19 @@ Options:
   -k, --key TEXT  Your encryption key.  [required]
   -h, --help      Show this message and exit.
 ```
+### Generate
+
+```shell
+~$ pyencrypt generate -h
+Usage: pyencrypt generate [OPTIONS]
+
+  Generate loader file using specified key
+
+Options:
+  -k, --key TEXT  Your encryption key.  [required]
+  -h, --help      Show this message and exit.
+```
+
 ## Example
 ### Encrypt
 ```shell
