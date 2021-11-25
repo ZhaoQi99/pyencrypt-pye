@@ -31,25 +31,31 @@ pyencrypt will generate encryption key randomly.
 """
 
 PYTHON_MAJOR, PYTHON_MINOR = sys.version_info[:2]
-LAODER_FILE_NAME = "loader.cpython-{major}{minor}{abi}-{platform}.so".format(
-    major=PYTHON_MAJOR,
-    minor=PYTHON_MINOR,
-    abi=sys.abiflags,
-    platform=sys.platform)
+LAODER_FILE_NAME = click.style(
+    "encrypted/loader.cpython-{major}{minor}{abi}-{platform}.so".format(
+        major=PYTHON_MAJOR,
+        minor=PYTHON_MINOR,
+        abi=sys.abiflags,
+        platform=sys.platform),
+    blink=True,
+    fg='blue')
+
+SUCCESS_ANSI = click.style('successfully', fg='green')
+INVALID_KEY_MSG = click.style('Your encryption key is invalid.', fg='red')
 
 FINISH_ENCRYPT_MSG = f"""
-Encryption completed successfully.
-Please copy encrypted/{LAODER_FILE_NAME} into your encrypted directory.
+Encryption completed {SUCCESS_ANSI}.
+Please copy {LAODER_FILE_NAME} into your encrypted directory.
 And then remove `encrypted` directory.
 Finally, add `import loader` at the top of your entry file.\
 """
 
-FINISH_DECRYPT_MSG = """
-Decryption completed successfully. Your origin source code has be put: {path}\
+FINISH_DECRYPT_MSG = f"""
+Decryption completed {SUCCESS_ANSI}. Your origin source code has be put: %s
 """
 
 FINISH_GENERATE_MSG = f"""
-Generate loader file successfully. Your loader file is located in {LAODER_FILE_NAME}
+Generate loader file {SUCCESS_ANSI}. Your loader file is located in {LAODER_FILE_NAME}
 """
 
 
@@ -85,10 +91,12 @@ def cli():
 def encrypt_command(ctx, pathname, delete, key):
     """Encrypt your python code"""
     if key is not None and not _check_key(key):
-        ctx.fail(f'Your encryption key is invalid.')
+        ctx.fail(INVALID_KEY_MSG)
     if key is None:
         key = generate_aes_key().decode()
-        click.echo(f'Your randomly encryption 🔑 is {key}')
+        click.echo(
+            f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}'
+        )
 
     path = Path(pathname)
     work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
@@ -124,9 +132,12 @@ def encrypt_command(ctx, pathname, delete, key):
               help='Your encryption key.',
               type=click.STRING)
 @click.help_option('-h', '--help')
-def decrypt_command(pathname, key):
+@click.pass_context
+def decrypt_command(ctx, pathname, key):
     """Decrypt encrypted pye file"""
     path = Path(pathname)
+    if not _check_key(key):
+        ctx.fail(INVALID_KEY_MSG)
 
     if path.is_file():
         work_dir = Path(os.getcwd())
@@ -145,7 +156,7 @@ def decrypt_command(pathname, key):
     else:
         raise Exception(f'{path} is not a valid path.')
 
-    click.echo(FINISH_DECRYPT_MSG.format(path=work_dir))
+    click.echo(FINISH_DECRYPT_MSG % work_dir)
 
 
 @cli.command(name='generate')
@@ -159,7 +170,7 @@ def decrypt_command(pathname, key):
 def generate_loader(ctx, key):
     """Generate loader file using specified key"""
     if not _check_key(key):
-        ctx.fail(f'Your encryption key is invalid.')
+        ctx.fail(INVALID_KEY_MSG)
     cipher_key, d, n = encrypt_key(key.encode())
     generate_so_file(cipher_key, d, n)
     click.echo(FINISH_GENERATE_MSG)
