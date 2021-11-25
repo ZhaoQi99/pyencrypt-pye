@@ -57,6 +57,7 @@ Usage: pyencrypt decrypt [OPTIONS] PATHNAME
   Decrypt encrypted pye file
 
 Options:
+  -i, --in-place  make changes to files in place
   -k, --key TEXT  Your encryption key.  [required]
   -h, --help      Show this message and exit.
 ```

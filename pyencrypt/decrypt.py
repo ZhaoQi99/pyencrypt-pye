@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 from pyencrypt.aes import aes_decrypt
 from pyencrypt.ntt import intt
 
@@ -16,7 +16,10 @@ def _decrypt_file(data: bytes, key: str) -> bytes:
     return aes_decrypt(data, key)
 
 
-def decrypt_file(path: Path, key: str, new_path: Path = None) -> bytes:
+def decrypt_file(path: Path,
+                 key: str,
+                 delete_origin: bool = False,
+                 new_path: Path = None) -> bytes:
     if path.suffix != '.pye':
         raise Exception(f"{path.name} can't be decrypted.")
     data = _decrypt_file(path.read_bytes(), key)
@@ -25,4 +28,6 @@ def decrypt_file(path: Path, key: str, new_path: Path = None) -> bytes:
             raise Exception("Origin file path must be py suffix.")
         new_path.touch(exist_ok=True)
         new_path.write_bytes(data)
+    if delete_origin:
+        os.remove(path)
     return data

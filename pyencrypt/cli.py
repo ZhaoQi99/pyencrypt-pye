@@ -74,7 +74,7 @@ def cli():
 @click.argument('pathname', type=click.Path(exists=True, resolve_path=True))
 @click.option('-i',
               '--in-place',
-              'delete',
+              'replace',
               default=False,
               help='make changes to files in place',
               is_flag=True)
@@ -84,11 +84,13 @@ def cli():
               help=KEY_OPTION_HELP,
               type=click.STRING)
 @click.confirmation_option(
+    '-y',
+    '--yes',
     prompt='Are you sure you want to encrypt your python file?',
     help='Automatically answer yes for confirm questions.')
 @click.help_option('-h', '--help')
 @click.pass_context
-def encrypt_command(ctx, pathname, delete, key):
+def encrypt_command(ctx, pathname, replace, key):
     """Encrypt your python code"""
     if key is not None and not _check_key(key):
         ctx.fail(INVALID_KEY_MSG)
@@ -99,23 +101,26 @@ def encrypt_command(ctx, pathname, delete, key):
         )
 
     path = Path(pathname)
-    work_dir = Path(os.getcwd()) / 'encrypted' / 'src'
 
     if path.is_file():
-        new_path = Path(os.getcwd()) / path.with_suffix('.pye').name
-        encrypt_file(path, key, delete, new_path)
+        if replace:
+            new_path = path.with_suffix('.pye')
+        else:
+            new_path = Path(os.getcwd()) / path.with_suffix('.pye').name
+        encrypt_file(path, key, replace, new_path)
     elif path.is_dir():
-        work_dir.exists() and shutil.rmtree(work_dir)
-        shutil.copytree(path, work_dir)
-        files = set(path.glob('**/*.py')) - set(
-            path.glob(f'encrypted/**/*.py'))
+        if replace:
+            work_dir = path
+        else:
+            work_dir = Path(os.getcwd()) / 'encrypted' / path.name
+            work_dir.exists() and shutil.rmtree(work_dir)
+            shutil.copytree(path, work_dir)
+        files = set(work_dir.glob('**/*.py'))
         with click.progressbar(files, label='🔐 Encrypting') as bar:
             for file in bar:
+                new_path = file.with_suffix('.pye')
                 if can_encrypt(file):
-                    new_path = work_dir / file.relative_to(path)
-                    new_path.unlink()
-                    encrypt_file(file, key, delete,
-                                 new_path.with_suffix('.pye'))
+                    encrypt_file(file, key, True, new_path)
     else:
         raise Exception(f'{path} is not a valid path.')
 
@@ -126,6 +131,12 @@ def encrypt_command(ctx, pathname, delete, key):
 
 @cli.command(name='decrypt')
 @click.argument('pathname', type=click.Path(exists=True, resolve_path=True))
+@click.option('-i',
+              '--in-place',
+              'replace',
+              default=False,
+              help='make changes to files in place',
+              is_flag=True)
 @click.option('-k',
               '--key',
               required=True,
@@ -133,26 +144,32 @@ def encrypt_command(ctx, pathname, delete, key):
               type=click.STRING)
 @click.help_option('-h', '--help')
 @click.pass_context
-def decrypt_command(ctx, pathname, key):
+def decrypt_command(ctx, pathname, replace, key):
     """Decrypt encrypted pye file"""
     path = Path(pathname)
     if not _check_key(key):
         ctx.fail(INVALID_KEY_MSG)
 
     if path.is_file():
-        work_dir = Path(os.getcwd())
-        new_path = work_dir / path.with_suffix('.py').name
-        origin_data = decrypt_file(path, key, new_path)
+        if replace:
+            new_path = path.with_suffix('.py')
+        else:
+            new_path = Path(os.getcwd()) / path.with_suffix('.py').name
+        work_dir = new_path.parent
+        origin_data = decrypt_file(path, key, replace, new_path)
         print(origin_data.decode())
     elif path.is_dir():
-        work_dir = Path(os.getcwd()) / 'decrypted' / 'src'
-        work_dir.exists() and shutil.rmtree(work_dir)
-        shutil.copytree(path, work_dir)
-        files = list(path.glob('**/*.pye'))
+        if replace:
+            work_dir = path
+        else:
+            work_dir = Path(os.getcwd()) / 'decrypted' / path.name
+            work_dir.exists() and shutil.rmtree(work_dir)
+            shutil.copytree(path, work_dir)
+        files = list(work_dir.glob('**/*.pye'))
         with click.progressbar(files, label='🔓 Decrypting') as bar:
-            for file in files:
-                new_path = work_dir / file.relative_to(path)
-                decrypt_file(file, key, new_path)
+            for file in bar:
+                new_path = file.with_suffix('.py')
+                decrypt_file(file, key, True, new_path)
     else:
         raise Exception(f'{path} is not a valid path.')
 
