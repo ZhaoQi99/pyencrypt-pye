@@ -26,7 +26,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
         self.__private_key = ''
         self.__cipher_key = ''
 
-    def get_filename(self, fullname: str) -> _Path:
+    def get_filename(self, fullname: str) -> str:
         return self.path
 
     def get_data(self, path: _Path) -> bytes:
@@ -51,7 +51,8 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
             else:
                 file_path = Path(path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
         else:
-            file_path = f'{fullname}.pye'
+            file_path = Path(f'{fullname}.pye')
+        file_path = file_path.absolute().as_posix()
         if not os.path.exists(file_path):
             return None
         loader = EncryptFileLoader(file_path)
