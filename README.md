@@ -1,6 +1,6 @@
 # pyencrypt-pye
 ---
-encrypt python source code and import dynamically.
+encrypt python source code and import module dynamically.
 
 ```
                                                       _
