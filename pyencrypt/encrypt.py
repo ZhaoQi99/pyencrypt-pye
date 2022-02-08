@@ -32,6 +32,11 @@ def encrypt_key(key: bytes) -> str:
     ascii_ls = [ord(x) for x in key.decode()]
     numbers = generate_rsa_number(2048)
     e, n = numbers['e'], numbers['n']
+    # fill length to be a power of 2
+    length = len(ascii_ls)
+    if length & (length - 1) != 0:
+        length = 1 << length.bit_length()
+        ascii_ls = ascii_ls + [0] * (length - len(ascii_ls))
     cipher_ls = list()
     # ntt后再用RSA加密
     for num in ntt(ascii_ls):
