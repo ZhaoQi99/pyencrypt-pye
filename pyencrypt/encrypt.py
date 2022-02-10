@@ -14,7 +14,7 @@ NOT_ALLOWED_ENCRYPT_FILES = [
 def _encrypt_file(
     data: bytes,
     key: bytes,
-) -> None:
+) -> bytes:
     return aes_encrypt(data, key)
 
 
@@ -32,6 +32,11 @@ def encrypt_key(key: bytes) -> str:
     ascii_ls = [ord(x) for x in key.decode()]
     numbers = generate_rsa_number(2048)
     e, n = numbers['e'], numbers['n']
+    # fill length to be a power of 2
+    length = len(ascii_ls)
+    if length & (length - 1) != 0:
+        length = 1 << length.bit_length()
+        ascii_ls = ascii_ls + [0] * (length - len(ascii_ls))
     cipher_ls = list()
     # ntt后再用RSA加密
     for num in ntt(ascii_ls):
@@ -39,7 +44,7 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, d: int, n: int):
+def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
@@ -57,7 +62,10 @@ def generate_so_file(cipher_key: str, d: int, n: int):
         1).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'",
                    1).replace("from pyencrypt.decrypt import *", '')
 
-    temp_dir = Path(os.getcwd()) / 'encrypted'
+    if base_dir is None:
+        base_dir = Path(os.getcwd())
+
+    temp_dir = base_dir / 'encrypted'
     temp_dir.mkdir(exist_ok=True)
     loader_file_path = temp_dir / 'loader.py'
     loader_file_path.touch(exist_ok=True)
@@ -70,7 +78,6 @@ def generate_so_file(cipher_key: str, d: int, n: int):
     loader_origin_file_path.touch(exist_ok=True)
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
-    setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
     args = [
         'pyminifier', '--obfuscate-classes', '--obfuscate-import-methods',
         '--replacement-length', '20', '-o',
@@ -81,17 +88,16 @@ def generate_so_file(cipher_key: str, d: int, n: int):
     if ret.returncode == 0:
         pass
 
-    args = [
-        'python',
-        setup_file_path.as_posix(), 'build_ext', '--build-lib',
-        temp_dir.as_posix()
-    ]
-    ret = subprocess.run(args,
-                         shell=False,
-                         stderr=subprocess.PIPE,
-                         encoding='utf-8')
-    if ret.returncode == 0:
-        pass
+    from setuptools import setup
+    from Cython.Build import cythonize
+    from Cython.Distutils import build_ext
+    setup(
+        ext_modules=cythonize(loader_file_path.as_posix(), language_level="3"),
+        script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
+        cmdclass={'build_ext': build_ext},
+    )
+
+    return True
 
 
 def encrypt_file(path: Path,

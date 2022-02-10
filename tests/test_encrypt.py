@@ -1,0 +1,107 @@
+import shutil
+import pytest
+from pyencrypt.encrypt import *
+from pyencrypt.decrypt import *
+import os
+
+from constants import AES_KEY
+from pyencrypt.generate import generate_aes_key
+
+
+
+@pytest.mark.parametrize('key', [
+    AES_KEY,
+    generate_aes_key(),
+])
+def test_encrypt_key(key):
+    cipher, d, n = encrypt_key(key)
+    assert isinstance(cipher, str)
+    assert isinstance(d, int)
+    assert isinstance(n, int)
+
+
+@pytest.mark.parametrize(
+    'path,expected', [
+        (Path('__init__.py'), False),
+        (Path('pyencrypt/__init__.py'), False),
+        (Path('management/commands/user.py'), False),
+        (Path('tests/test.pye'), False),
+        (Path('tests/test_encrypt.py'), True),
+    ]
+)
+def test_can_encrypt(path, expected):
+    assert can_encrypt(path) == expected
+
+
+class TestGenarateSoFile:
+
+    def setup_method(self, method):
+        if method.__name__ == 'test_generate_so_file_default_path':
+            shutil.rmtree((Path(os.getcwd()) / 'encrypted').as_posix(), ignore_errors=True)
+
+    @pytest.mark.parametrize('key', [
+        AES_KEY,
+        generate_aes_key(),
+    ])
+    def test_generate_so_file(self, key, tmp_path):
+        cipher_key, d, n = encrypt_key(key)
+        assert generate_so_file(cipher_key, d, n, tmp_path)
+        assert (tmp_path / 'encrypted' / 'loader.py').exists() == True
+        assert (tmp_path / 'encrypted' / 'loader_origin.py').exists() == True
+        assert list((tmp_path / 'encrypted').glob('loader.cpython-*-*.so')) != []
+
+    @pytest.mark.parametrize('key', [
+        AES_KEY,
+        generate_aes_key(),
+    ])
+    def test_generate_so_file_default_path(self, key):
+        cipher_key, d, n = encrypt_key(key)
+        assert generate_so_file(cipher_key, d, n)
+        assert (Path(os.getcwd()) / 'encrypted' / 'loader.py').exists() == True
+        assert (Path(os.getcwd()) / 'encrypted' / 'loader_origin.py').exists() == True
+        assert list((Path(os.getcwd()) / 'encrypted').glob('loader.cpython-*-*.so')) != []
+
+
+@pytest.mark.parametrize(
+    'path,key,exception',
+    [
+        (Path('tests/test.py'), AES_KEY, FileNotFoundError),
+        (Path('tests/test.pye'), AES_KEY, Exception),  # TODO: 封装Exception
+        (Path('tests/__init__.py'), AES_KEY, Exception),
+    ]
+)
+def test_encrypt_file_path_exception(path, key, exception):
+    with pytest.raises(exception) as excinfo:
+        encrypt_file(path, key)
+    assert excinfo.value.__class__ == exception
+
+
+@pytest.fixture
+def python_file_path(tmp_path):
+    fn = tmp_path / 'test.py'
+    fn.touch()
+    fn.write_text('print("hello world")')
+    return fn
+
+
+def test_encrypt_file_default(python_file_path):
+    assert isinstance(encrypt_file(python_file_path, AES_KEY), bytes) == True
+    assert python_file_path.exists() == True
+
+
+def test_encrypt_file_delete_origin(python_file_path):
+    encrypt_file(python_file_path, AES_KEY, delete_origin=True)
+    assert python_file_path.exists() == False
+
+
+def test_encrypt_file_new_path(python_file_path):
+    new_path = python_file_path.parent / 'test.pye'
+    encrypt_file(python_file_path, AES_KEY, new_path=new_path)
+    assert new_path.exists() == True
+    assert python_file_path.exists() == True
+
+def test_encrypt_file_new_path_exception(python_file_path):
+    new_path = python_file_path.parent / 'test.py'
+    with pytest.raises(Exception) as excinfo:
+        encrypt_file(python_file_path, AES_KEY, new_path=new_path)
+    assert str(excinfo.value) == 'Encrypted file path must be pye suffix.'

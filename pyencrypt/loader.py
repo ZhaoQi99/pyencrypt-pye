@@ -33,7 +33,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
         try:
             __n, __d = self.__private_key.split('O', 1)
             return decrypt_file(
-                Path(path), decrypt_key(self.__cipher_key, int(__n), int(__d)))
+                Path(path), decrypt_key(self.__cipher_key, int(__d), int(__n)))
         except Exception:
             traceback.print_exc()
             return b''
@@ -51,7 +51,10 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
             else:
                 file_path = Path(path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
         else:
-            file_path = Path(f'{fullname}.pye')
+            for p in sys.path:
+                file_path = Path(p) / f'{fullname}.pye'
+                if file_path.exists():
+                    break
         file_path = file_path.absolute().as_posix()
         if not os.path.exists(file_path):
             return None

@@ -848,21 +848,3 @@ def aes_decrypt(data: bytes, key: str) -> bytes:
         plain.append(AESModeOfOperationECB(key).decrypt(x))
     return strip_padding(b''.join(plain))
 
-
-if __name__ == '__main__':
-    plain = '你好!世界!'
-    key = 'tB9qW0YGlYIyBfTmuyQbm6AjPQa9gTKwO8j5H4IBf1A='
-    plain = add_padding(plain.encode())
-    print('plain', plain)
-    cipher = AESModeOfOperationECB(key).encrypt(plain)
-    print('cipher', cipher)
-    plain = strip_padding(AESModeOfOperationECB(key).decrypt(cipher))
-    print(plain)
-    print(plain.decode())
-
-    with open('generate.py', 'rb') as f:
-        data = f.read()
-    cipher = aes_encrypt(data, key)
-    print(cipher)
-    plain = aes_decrypt(cipher, key)
-    print(plain.decode())

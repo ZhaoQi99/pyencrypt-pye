@@ -4,7 +4,7 @@ from pyencrypt.aes import aes_decrypt
 from pyencrypt.ntt import intt
 
 
-def decrypt_key(cipher_key: str, n: int, d: int) -> str:
+def decrypt_key(cipher_key: str, d: int, n: int) -> str:
     plain_ls = list()
     for num in map(int, cipher_key.split('O')):
         plain_ls.append(pow(num, d, n))

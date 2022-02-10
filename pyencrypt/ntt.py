@@ -16,10 +16,10 @@ def bitreverse(x: list, length: int):
 
 
 def _ntt(arr: list, inverse=False):
-    length = 1
-    while length < len(arr):
-        length *= 2
-    x = arr + [0] * (length - len(arr))
+    length = len(arr)
+    if length & (length - 1) != 0:
+        raise ValueError("The length of input must be a power of 2.")
+    x = arr.copy()
     g = pow(G, (M - 1) // length, M)
     if inverse:
         g = pow(g, M - 2, M)
