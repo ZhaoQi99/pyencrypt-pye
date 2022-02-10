@@ -14,7 +14,7 @@ NOT_ALLOWED_ENCRYPT_FILES = [
 def _encrypt_file(
     data: bytes,
     key: bytes,
-) -> None:
+) -> bytes:
     return aes_encrypt(data, key)
 
 
@@ -44,7 +44,7 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, d: int, n: int):
+def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
@@ -62,7 +62,10 @@ def generate_so_file(cipher_key: str, d: int, n: int):
         1).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'",
                    1).replace("from pyencrypt.decrypt import *", '')
 
-    temp_dir = Path(os.getcwd()) / 'encrypted'
+    if base_dir is None:
+        base_dir = Path(os.getcwd())
+
+    temp_dir = base_dir / 'encrypted'
     temp_dir.mkdir(exist_ok=True)
     loader_file_path = temp_dir / 'loader.py'
     loader_file_path.touch(exist_ok=True)
@@ -97,6 +100,7 @@ def generate_so_file(cipher_key: str, d: int, n: int):
                          encoding='utf-8')
     if ret.returncode == 0:
         pass
+    return True
 
 
 def encrypt_file(path: Path,
