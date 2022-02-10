@@ -78,7 +78,6 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     loader_origin_file_path.touch(exist_ok=True)
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
-    setup_file_path = Path(os.path.abspath(__file__)).parent / 'setup.py'
     args = [
         'pyminifier', '--obfuscate-classes', '--obfuscate-import-methods',
         '--replacement-length', '20', '-o',
@@ -89,17 +88,15 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     if ret.returncode == 0:
         pass
 
-    args = [
-        'python',
-        setup_file_path.as_posix(), 'build_ext', '--build-lib',
-        temp_dir.as_posix()
-    ]
-    ret = subprocess.run(args,
-                         shell=False,
-                         stderr=subprocess.PIPE,
-                         encoding='utf-8')
-    if ret.returncode == 0:
-        pass
+    from setuptools import setup
+    from Cython.Build import cythonize
+    from Cython.Distutils import build_ext
+    setup(
+        ext_modules=cythonize(loader_file_path.as_posix(), language_level="3"),
+        script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
+        cmdclass={'build_ext': build_ext},
+    )
+
     return True
 
 
