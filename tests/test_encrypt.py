@@ -8,7 +8,6 @@ from constants import AES_KEY
 from pyencrypt.generate import generate_aes_key
 
 
-
 @pytest.mark.parametrize('key', [
     AES_KEY,
     generate_aes_key(),
@@ -34,7 +33,6 @@ def test_can_encrypt(path, expected):
 
 
 class TestGenarateSoFile:
-
     def setup_method(self, method):
         if method.__name__ == 'test_generate_so_file_default_path':
             shutil.rmtree((Path(os.getcwd()) / 'encrypted').as_posix(), ignore_errors=True)
@@ -99,6 +97,7 @@ def test_encrypt_file_new_path(python_file_path):
     encrypt_file(python_file_path, AES_KEY, new_path=new_path)
     assert new_path.exists() == True
     assert python_file_path.exists() == True
+
 
 def test_encrypt_file_new_path_exception(python_file_path):
     new_path = python_file_path.parent / 'test.py'

@@ -32,22 +32,17 @@ class EncryptFileLoader(abc.SourceLoader, Base):
     def get_data(self, path: _Path) -> bytes:
         try:
             __n, __d = self.__private_key.split('O', 1)
-            return decrypt_file(
-                Path(path), decrypt_key(self.__cipher_key, int(__d), int(__n)))
+            return decrypt_file(Path(path), decrypt_key(self.__cipher_key, int(__d), int(__n)))
         except Exception:
             traceback.print_exc()
             return b''
 
 
 class EncryptFileFinder(abc.MetaPathFinder, Base):
-    def find_spec(self,
-                  fullname: str,
-                  path: Sequence[_Path],
-                  target: types.ModuleType = None) -> ModuleSpec:
+    def find_spec(self, fullname: str, path: Sequence[_Path], target: types.ModuleType = None) -> ModuleSpec:
         if path:
             if isinstance(path, _NamespacePath):
-                file_path = Path(
-                    path._path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
+                file_path = Path(path._path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
             else:
                 file_path = Path(path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
         else:
@@ -59,9 +54,7 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
         if not os.path.exists(file_path):
             return None
         loader = EncryptFileLoader(file_path)
-        return spec_from_loader(name=fullname,
-                                loader=loader,
-                                origin='origin-encrypt')
+        return spec_from_loader(name=fullname, loader=loader, origin='origin-encrypt')
 
 
 # TODO: generate randomly AES Class

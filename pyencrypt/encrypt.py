@@ -52,15 +52,15 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     need_import_files = ['ntt.py', 'aes.py', 'decrypt.py']
     for file in need_import_files:
         file_path = path / file
-        decrypt_source_ls.append(file_path.read_text().replace(
-            'from pyencrypt.ntt import intt',
-            '').replace('from pyencrypt.aes import aes_decrypt', ''))
+        decrypt_source_ls.append(
+            file_path.read_text().replace('from pyencrypt.ntt import intt',
+                                          '').replace('from pyencrypt.aes import aes_decrypt', '')
+        )
 
     loader_source_path = path / 'loader.py'
     loader_source = loader_source_path.read_text().replace(
-        "__private_key = ''", f"__private_key = '{private_key}'",
-        1).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'",
-                   1).replace("from pyencrypt.decrypt import *", '')
+        "__private_key = ''", f"__private_key = '{private_key}'", 1
+    ).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1).replace("from pyencrypt.decrypt import *", '')
 
     if base_dir is None:
         base_dir = Path(os.getcwd())
@@ -79,10 +79,14 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
     args = [
-        'pyminifier', '--obfuscate-classes', '--obfuscate-import-methods',
-        '--replacement-length', '20', '-o',
+        'pyminifier',
+        '--obfuscate-classes',
+        '--obfuscate-import-methods',
+        '--replacement-length',
+        '20',
+        '-o',
         loader_file_path.as_posix(),
-        loader_file_path.as_posix()
+        loader_file_path.as_posix(),
     ]
     ret = subprocess.run(args, shell=False, encoding='utf-8')
     if ret.returncode == 0:
@@ -100,10 +104,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
     return True
 
 
-def encrypt_file(path: Path,
-                 key: str,
-                 delete_origin: bool = False,
-                 new_path: Path = None):
+def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
     if not can_encrypt(path):
         raise Exception(f"{path.name} can't be encrypted.")
     encrypted_data = _encrypt_file(path.read_bytes(), key)

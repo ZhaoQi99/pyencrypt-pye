@@ -16,10 +16,7 @@ def _decrypt_file(data: bytes, key: str) -> bytes:
     return aes_decrypt(data, key)
 
 
-def decrypt_file(path: Path,
-                 key: str,
-                 delete_origin: bool = False,
-                 new_path: Path = None) -> bytes:
+def decrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None) -> bytes:
     if path.suffix != '.pye':
         raise Exception(f"{path.name} can't be decrypted.")
     data = _decrypt_file(path.read_bytes(), key)

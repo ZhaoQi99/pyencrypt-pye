@@ -5,7 +5,6 @@ import pytest
 
 
 class TestNtt:
-
     @pytest.mark.parametrize(
         "input,expected", [
             ([1, 2, 3, 4], [10, 173167434, 998244351, 825076915]),
@@ -29,7 +28,7 @@ class TestNtt:
         random_list(6),
         random_list(7),
     ])
-    def test_ntt_exception(self,input):
+    def test_ntt_exception(self, input):
         with pytest.raises(ValueError) as excinfo:
             ntt(input)
         assert str(excinfo.value) == "The length of input must be a power of 2."
@@ -44,13 +43,11 @@ class TestNtt:
             intt(input)
         assert str(excinfo.value) == "The length of input must be a power of 2."
 
-    @pytest.mark.parametrize(
-        "input,expected", [
-            (random_list(4), 4),
-            (random_list(8), 8),
-            (random_list(16), 16),
-        ]
-    )
+    @pytest.mark.parametrize("input,expected", [
+        (random_list(4), 4),
+        (random_list(8), 8),
+        (random_list(16), 16),
+    ])
     def test_ntt_result_length(self, input, expected):
         assert len(ntt(input)) == expected
 
