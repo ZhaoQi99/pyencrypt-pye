@@ -104,4 +104,7 @@ from test import *
 yapf --recursive -i pyencrypt 
 isort pyencrypt
 ```
-
+## License
+[GNU General Public License v3.0](https://github.com/ZhaoQi99/pyencrypt-pye/blob/main/LICENSE)
+## Author
+* Qi Zhao([zhaoqi99@outlook.com](mailto:zhaoqi99@outlook.com))
