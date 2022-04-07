@@ -10,6 +10,8 @@ from pyencrypt.decrypt import decrypt_file
 from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key,
                                generate_so_file)
 from pyencrypt.generate import generate_aes_key
+from pyencrypt.check import CheckFinder
+
 
 VERSION = f"""\
                                                       _
@@ -191,6 +193,17 @@ def generate_loader(ctx, key):
     cipher_key, d, n = encrypt_key(key.encode())
     generate_so_file(cipher_key, d, n)
     click.echo(FINISH_GENERATE_MSG)
+
+
+@cli.command(name='check')
+@click.argument('entry', type=click.Path(exists=True))
+@click.help_option('-h', '--help')
+def check(entry):
+    """Check to see if it can be encrypted"""
+    sys.path.insert(0,os.getcwd())
+    sys.meta_path.insert(0,CheckFinder())
+    entry = Path(entry).as_posix().rstrip('.py').replace('/','.')
+    __import__(entry)
 
 
 if __name__ == '__main__':

@@ -30,6 +30,7 @@ Options:
   -h, --help  Show this message and exit.
 
 Commands:
+  check     Check to see if it can be encrypted
   decrypt   Decrypt encrypted pye file
   encrypt   Encrypt your python code
   generate  Generate loader file using specified key
@@ -72,6 +73,17 @@ Usage: pyencrypt generate [OPTIONS]
 Options:
   -k, --key TEXT  Your encryption key.  [required]
   -h, --help      Show this message and exit.
+```
+
+### Check
+```shell
+~$ pyencrypt check -h
+Usage: cli.py check [OPTIONS] ENTRY
+
+  Check to see if it can be encrypted
+
+Options:
+  -h, --help  Show this message and exit.
 ```
 
 ## Example
