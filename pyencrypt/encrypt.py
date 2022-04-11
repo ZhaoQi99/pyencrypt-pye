@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from pyencrypt.ntt import ntt
 NOT_ALLOWED_ENCRYPT_FILES = [
     '__init__.py',
 ]
+
+REMOVE_SELF_IMPORT = re.compile(r'^from pyencrypt\.[\s\S]*?$', re.MULTILINE)
 
 
 def _encrypt_file(
@@ -44,23 +47,22 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
+def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, license: bool = False) -> Path:
     private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
-    need_import_files = ['ntt.py', 'aes.py', 'decrypt.py']
+    need_import_files = ['ntt.py', 'aes.py', 'decrypt.py', 'license.py']
     for file in need_import_files:
         file_path = path / file
-        decrypt_source_ls.append(
-            file_path.read_text().replace('from pyencrypt.ntt import intt',
-                                          '').replace('from pyencrypt.aes import aes_decrypt', '')
-        )
+        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('',file_path.read_text()))
 
     loader_source_path = path / 'loader.py'
-    loader_source = loader_source_path.read_text().replace(
+    loader_source = REMOVE_SELF_IMPORT.sub('', loader_source_path.read_text()).replace(
         "__private_key = ''", f"__private_key = '{private_key}'", 1
-    ).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1).replace("from pyencrypt.decrypt import *", '')
+    ).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1).replace(
+        'license = None', f'license = {license}', 1
+    )
 
     if base_dir is None:
         base_dir = Path(os.getcwd())
@@ -100,9 +102,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None):
         script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
         cmdclass={'build_ext': build_ext},
     )
-
-    return True
-
+    return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
 
 def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
     if not can_encrypt(path):

@@ -1,84 +1,126 @@
-import pytest
 from pathlib import Path
+import sys
 import shutil
-from pyencrypt.encrypt import *
-from constants import AES_KEY
+from typing import Tuple
+
+import pytest
+
+DEAFULT_META_PATH = sys.meta_path[::]
 
 
-@pytest.fixture(scope='module')
-def python_file(tmp_path_factory):
-    tmp_path = tmp_path_factory.mktemp('file')
-    path = tmp_path / 'aaa.py'
-    path.touch()
-    path.write_text("""\
-def main():
-    return 'hello world'
-    """)
-    new_path = path.with_suffix('.pye')
-    encrypt_file(path, AES_KEY, new_path=new_path)
-    path.unlink()
-    cipher_key, d, n = encrypt_key(AES_KEY)
-    generate_so_file(cipher_key, d, n, tmp_path)
-    loader_path = list((tmp_path / 'encrypted').glob('loader.cpython-*-*.so'))[0]
-    shutil.copy(loader_path, tmp_path)
-    shutil.rmtree(tmp_path / 'encrypted')
-    return new_path
+@pytest.mark.file(name='file1',function='test_file_1',code='\treturn "This is file test1"')
+def test_python_file_sys_path(file_and_loader: Tuple[Path], monkeypatch):
+    file_path, loader_path = file_and_loader
+    monkeypatch.syspath_prepend(file_path.parent.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
 
+    sys.modules.pop('loader', None)
+    sys.meta_path = DEAFULT_META_PATH.copy()
 
-def test_python_file_with_sys_path(python_file: Path, monkeypatch):
-    monkeypatch.syspath_prepend(python_file.parent.as_posix())
     import loader
-    from aaa import main
-    assert main() == 'hello world'
+    from file1 import test_file_1
 
+    assert test_file_1() == 'This is file test1'
 
-@pytest.fixture(scope='module')
-def python_package(tmp_path_factory):
-    pkg_path = tmp_path_factory.mktemp('package')
-    path = pkg_path / 'bbb'
-    path.mkdir()
-    (path / '__init__.py').touch()
-    path /= 'ccc.py'
-    path.touch()
-    path.write_text("""\
-def main():
-    return 'hello world'
-    """)
-    new_path = path.with_suffix('.pye')
-    encrypt_file(path, AES_KEY, new_path=new_path)
-    path.unlink()
-    cipher_key, d, n = encrypt_key(AES_KEY)
-    generate_so_file(cipher_key, d, n, pkg_path)
-    loader_path = list((pkg_path / 'encrypted').glob('loader.cpython-*-*.so'))[0]
-    shutil.copy(loader_path, pkg_path)
-    shutil.rmtree(pkg_path / 'encrypted')
-    return pkg_path
+@pytest.mark.license(enable=True)
+@pytest.mark.file(name='file2', function='test_file_2', code='\treturn "This is file test2"')
+def test_python_file_sys_path_with_license(file_and_loader: Tuple[Path], monkeypatch):
+    file_path, loader_path = file_and_loader
+    monkeypatch.syspath_prepend(file_path.parent.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
 
+    sys.modules.pop('loader', None)
+    sys.meta_path = DEAFULT_META_PATH.copy()
 
-def test_python_package(python_package: Path, monkeypatch):
-    monkeypatch.syspath_prepend(python_package.as_posix())
     import loader
-    from bbb.ccc import main
-    assert main() == 'hello world'
+    from file2 import test_file_2
+
+    assert test_file_2() == 'This is file test2'
 
 
-def test_python_package_without_init_file(tmp_path_factory):
-    pkg_path = tmp_path_factory.mktemp('package')
-    path = pkg_path / 'aaa'
-    path.mkdir()
-    path /= 'bbb.py'
-    path.touch()
-    path.write_text("""\
-def main():
-    return 'hello world'
-    """)
-    new_path = path.with_suffix('.pye')
-    encrypt_file(path, AES_KEY, new_path=new_path)
-    path.unlink()
-    cipher_key, d, n = encrypt_key(AES_KEY)
-    generate_so_file(cipher_key, d, n, pkg_path)
-    loader_path = list((pkg_path / 'encrypted').glob('loader.cpython-*-*.so'))[0]
-    shutil.copy(loader_path, pkg_path)
-    shutil.rmtree(pkg_path / 'encrypted')
+@pytest.mark.license(enable=True)
+@pytest.mark.file(name='file3',function='test_file_3',code='\treturn "This is file test3"')
+def test_python_file_sys_path_with_license_not_found(file_and_loader: Tuple[Path], monkeypatch):
+    file_path, loader_path = file_and_loader
+    monkeypatch.syspath_prepend(file_path.parent.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
+
+    shutil.rmtree(loader_path.parent / 'licenses')
+    with pytest.raises(Exception) as excinfo:
+        sys.modules.pop('loader', None)
+        sys.meta_path = DEAFULT_META_PATH.copy()
+
+        import loader
+        from file3 import test_file_3
+
+        assert test_file_3() == 'This is file test3'
+
+    assert str(excinfo.value) == 'Could not find license file.'
+
+# Package
+@pytest.mark.package(name='pkg1.a.b.c', function='test_package_1', code='\treturn "This is package test1"')
+def test_python_package(package_and_loader: Tuple[Path], monkeypatch):
+    package_path, loader_path = package_and_loader
+    monkeypatch.syspath_prepend(package_path.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
+
+    sys.modules.pop('loader', None)
+    sys.meta_path = DEAFULT_META_PATH.copy()
+
+
     import loader
-    from bbb.ccc import main
+    from pkg1.a.b.c import test_package_1
+
+    assert test_package_1() == 'This is package test1'
+
+@pytest.mark.package(name='pkg2.a.b.c', function='test_package_2', code='\treturn "This is package test2"')
+def test_python_package_without_init_file(package_and_loader: Tuple[Path], monkeypatch):
+    package_path, loader_path = package_and_loader
+    monkeypatch.syspath_prepend(package_path.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
+
+    for file in package_path.glob('**/__init__.py'):
+        file.unlink()
+
+    sys.modules.pop('loader', None)
+    sys.meta_path = DEAFULT_META_PATH.copy()
+
+    import loader
+    from pkg2.a.b.c import test_package_2
+
+    assert test_package_2() == 'This is package test2'
+
+
+@pytest.mark.license(enable=True)
+@pytest.mark.package(name='pkg3.a.b.c', function='test_package_3', code='\treturn "This is package test3"')
+def test_python_package_with_license(package_and_loader: Tuple[Path], monkeypatch):
+    package_path, loader_path = package_and_loader
+    monkeypatch.syspath_prepend(package_path.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
+
+    sys.modules.pop('loader', None)
+    sys.meta_path = DEAFULT_META_PATH.copy()
+
+    import loader
+    from pkg3.a.b.c import test_package_3
+
+    assert test_package_3() == 'This is package test3'
+
+
+@pytest.mark.license(enable=True)
+@pytest.mark.package(name='pkg4.a.b.c', function='test_package_4', code='\treturn "This is package test4"')
+def test_python_package_with_license_not_found(package_and_loader: Tuple[Path], monkeypatch):
+    package_path, loader_path = package_and_loader
+    monkeypatch.syspath_prepend(package_path.as_posix())
+    monkeypatch.syspath_prepend(loader_path.parent.as_posix())
+
+    shutil.rmtree(loader_path.parent.joinpath('licenses'))
+    with pytest.raises(Exception) as excinfo:
+        sys.modules.pop('loader', None)
+        sys.meta_path = DEAFULT_META_PATH.copy()
+
+        import loader
+        from pkg4.a.b.c import test_package_4
+
+        assert test_package_4() == 'This is package test4'
+    assert str(excinfo.value) == 'Could not find license file.'
