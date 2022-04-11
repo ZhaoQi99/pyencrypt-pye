@@ -9,7 +9,8 @@ from importlib.util import spec_from_loader
 from pathlib import Path
 from typing import Iterable, Sequence, Union
 
-from pyencrypt.decrypt import *
+from pyencrypt.decrypt import decrypt_file, decrypt_key
+from pyencrypt.license import check_license
 
 _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
@@ -21,10 +22,39 @@ class Base:
 
 
 class EncryptFileLoader(abc.SourceLoader, Base):
+    POSSIBLE_PATH = [
+        Path(os.path.expanduser('~')) / '.licenses' / 'license.lic',
+        Path(os.path.abspath(__file__)).parent / 'licenses' / 'license.lic',
+        Path(os.getcwd()) / 'licenses' / 'license.lic',
+    ]
+
     def __init__(self, path) -> None:
         self.path = path or ''
         self.__private_key = ''
         self.__cipher_key = ''
+        self.license = None
+        self.license_path = None
+        self._init_license_path()
+        self.check()
+
+    def _init_license_path(self) -> None:
+        if self.license is False:
+            return
+        for path in self.POSSIBLE_PATH:
+            if path.exists():
+                self.license_path = path
+                break
+
+    def check(self) -> bool:
+        if self.license is False:
+            return False
+
+        if self.license_path is None:
+            raise Exception('Could not find license file.')
+
+        __n, __d = self.__private_key.split('O', 1)
+        check_license(self.license_path, decrypt_key(self.__cipher_key, int(__d), int(__n)))
+        return True
 
     def get_filename(self, fullname: str) -> str:
         return self.path
@@ -58,4 +88,4 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
 
 
 # TODO: generate randomly AES Class
-sys.meta_path.append(EncryptFileFinder())
+sys.meta_path.insert(0,EncryptFileFinder())

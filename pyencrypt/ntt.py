@@ -52,9 +52,3 @@ def ntt(arr: list):
 def intt(arr: list):
     return _ntt(arr, True)
 
-
-if __name__ == '__main__':
-    ls = [1, 2, 3, 4]
-    assert intt(ntt(ls)) == ls
-    ls = [1, 2, 3, 4, 5]
-    assert intt(ntt(ls))[:len(ls)] == ls
