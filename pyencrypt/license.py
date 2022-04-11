@@ -31,7 +31,7 @@ def get_signature(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-FIELDS = ['not_valid_before', 'not_valid_after', 'ipv4', 'mac']
+FIELDS = ['invalid_before', 'invalid_after', 'ipv4', 'mac']
 
 
 def _combine_data(data: dict) -> bytes:
@@ -58,8 +58,8 @@ def generate_license_file(
         before = before.astimezone()
 
     data = {
-        'not_valid_before': before.strftime(DATE_FORMAT),
-        'not_valid_after': after.strftime(DATE_FORMAT),
+        'invalid_before': before.strftime(DATE_FORMAT),
+        'invalid_after': after.strftime(DATE_FORMAT),
         'mac': mac_addr,
         'ipv4': ipv4,
     }
@@ -82,8 +82,8 @@ def check_license(license_path: Path, aes_key: str):
         raise FileNotFoundError(f"License file {license_path.absolute().as_posix()} not found.")
     data = json.loads(license_path.read_text())
     signature = data.pop('signature')
-    before = datetime.strptime(data['not_valid_before'], DATE_FORMAT).astimezone()
-    after = datetime.strptime(data['not_valid_after'], DATE_FORMAT).astimezone()
+    before = datetime.strptime(data['invalid_before'], DATE_FORMAT).astimezone()
+    after = datetime.strptime(data['invalid_after'], DATE_FORMAT).astimezone()
     mac_address = data.get('mac')
     ipv4 = data.get('ipv4')
     now = datetime.now().astimezone()

@@ -10,7 +10,7 @@ from pyencrypt import __description__, __version__
 from pyencrypt.decrypt import decrypt_file
 from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key, generate_so_file)
 from pyencrypt.generate import generate_aes_key
-from pyencrypt.license import generate_license_file,MIN_DATETIME,MAX_DATETIME
+from pyencrypt.license import generate_license_file, MIN_DATETIME, MAX_DATETIME
 
 VERSION = f"""\
                                                       _
@@ -86,8 +86,8 @@ def cli():
 @click.option('--with-license', default=False, help='Add license to encrypted file', is_flag=True)
 @click.option('-m', '--bind-mac', 'mac', default=None, help='Bind mac address to encrypted file', type=click.STRING)
 @click.option('-4', '--bind-ipv4', 'ipv4', default=None, help='Bind ipv4 address to encrypted file', type=click.STRING)
-@click.option('-b', '--before', default=MAX_DATETIME, help='Expired date before this license', type=click.DateTime(formats=DATETIME_FORMATS))
-@click.option('-a', '--after', default=MIN_DATETIME, help='Expired date after this license', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.confirmation_option('-y', '--yes', prompt='Are you sure you want to encrypt your python file?', help='Automatically answer yes for confirm questions.')
 @click.help_option('-h', '--help')
 @click.pass_context
@@ -98,7 +98,6 @@ def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before
     if key is None:
         key = generate_aes_key().decode()
         click.echo(f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}')
-
 
     if before > after:
         ctx.fail(INVALID_EXPIRED_MSG)
@@ -187,16 +186,17 @@ def generate_loader(ctx, key):
 
 
 @cli.command(name='license')
+@click.help_option('-h', '--help')
 @click.option('-k', '--key', required=True, help='Your encryption key.', type=click.STRING)
 @click.option('-m', '--bind-mac', help='Your mac address.', type=click.STRING)
 @click.option('-4', '--bind-ipv4', help='Your ipv4 address.', type=click.STRING)
-@click.option('-b', '--before', default=MAX_DATETIME, help='Expired date before this license', type=click.DateTime(formats=DATETIME_FORMATS))
-@click.option('-a', '--after', default=MIN_DATETIME, help='Expired date after this license', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.pass_context
 def generate_license(ctx, key, mac, ipv4, before, after):
-    """Generate license file"""
+    """Generate license file using specified key"""
     if not _check_key(key):
-        raise Exception(INVALID_KEY_MSG)
+        ctx.fail(INVALID_KEY_MSG)
     if before > after:
         ctx.fail(INVALID_EXPIRED_MSG)
 
