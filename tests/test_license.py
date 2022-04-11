@@ -27,7 +27,10 @@ def test_get_host_ipv4():
 class TestGenerateLicense:
     def setup_method(self, method):
         self.fields = FIELDS +  ['signature']
-        shutil.rmtree((Path(os.getcwd()) / 'license').as_posix(), ignore_errors=True)
+        shutil.rmtree((Path(os.getcwd()) / 'licenses').as_posix(), ignore_errors=True)
+
+    def teardown_method(self, method):
+        shutil.rmtree((Path(os.getcwd()) / 'licenses').as_posix(), ignore_errors=True)
 
     @pytest.mark.parametrize('key', [
         AES_KEY,
@@ -106,7 +109,7 @@ class TestGenerateLicense:
         with pytest.raises(Exception) as excinfo:
             check_license(license_file_path, key)
         assert str(excinfo.value) == 'Machine mac address is invalid.'
-    
+
     @pytest.mark.parametrize('key,ipv4', [
         (AES_KEY, 'invalid ipv4 address'),
         (generate_aes_key(), 'invalid ipv4 address'),
