@@ -1,5 +1,7 @@
 import base64
+import ipaddress
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -8,9 +10,10 @@ import click
 
 from pyencrypt import __description__, __version__
 from pyencrypt.decrypt import decrypt_file
-from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key, generate_so_file)
+from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key,
+                               generate_so_file)
 from pyencrypt.generate import generate_aes_key
-from pyencrypt.license import generate_license_file, MIN_DATETIME, MAX_DATETIME
+from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
 
 VERSION = f"""\
                                                       _
@@ -42,7 +45,7 @@ LAODER_FILE_NAME = click.style(
 LICENSE_FILE_NAME = click.style("license.lic", blink=True, fg='blue')
 
 SUCCESS_ANSI = click.style('successfully', fg='green')
-INVALID_KEY_MSG = click.style('Your encryption key is invalid.', fg='red')
+INVALID_KEY_MSG = click.style('Your encryption 🔑 is invalid.', fg='red')
 
 INVALID_EXPIRED_MSG = 'Expired before date must be less than expired after date.'
 
@@ -68,8 +71,62 @@ Generate license file {SUCCESS_ANSI}. Your license file is located in {LICENSE_F
 DATETIME_FORMATS = ['%Y-%m-%dT%H:%M:%S %z', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d']
 
 
-def _check_key(key: str) -> bool:
-    return not (len(key) % 4 or len(base64.b64decode(key)) % 16)
+class KeyParamType(click.ParamType):
+    name = 'key'
+
+    def _check_key(self, key: str) -> bool:
+        return not (len(key) % 4 or len(base64.b64decode(key)) % 16)
+
+    def convert(self, value, param, ctx) -> str:
+        value = click.STRING.convert(value, param, ctx)
+        if not self._check_key(value):
+            self.fail(INVALID_KEY_MSG, param, ctx)
+        return value
+
+    def get_metavar(self, param):
+        return '🔑'
+
+    def __repr__(self) -> str:
+        return "KEY"
+
+
+class MacAddressParamType(click.ParamType):
+    name = 'mac_address'
+    pattern = re.compile(r'^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$')
+
+    def convert(self, value, param, ctx) -> str:
+        value = click.STRING.convert(value, param, ctx)
+        if not self.pattern.match(value):
+            self.fail(f'{value} is not a valid mac address', param, ctx)
+        return value
+
+    def get_metavar(self, param):
+        return '01:23:45:67:89:AB'
+
+    def __repr__(self) -> str:
+        return "MacAddress"
+
+
+class IPv4AddressParamType(click.ParamType):
+    name = 'ipv4_address'
+
+    def convert(self, value, param, ctx) -> str:
+        value = click.STRING.convert(value, param, ctx)
+        try:
+            return str(ipaddress.IPv4Address(value))
+        except ValueError:
+            self.fail(f'{value} is not a valid IPv4 Address', param, ctx)
+
+    def get_metavar(self, param):
+        return '192.168.0.1'
+
+    def __repr__(self) -> str:
+        return "Ipv4Address"
+
+class CustomParamType:
+    KEY = KeyParamType()
+    MAC_ADDR = MacAddressParamType()
+    IPV4_ADDR = IPv4AddressParamType()
 
 
 @click.group()
@@ -82,10 +139,10 @@ def cli():
 @cli.command(name='encrypt')
 @click.argument('pathname', type=click.Path(exists=True, resolve_path=True))
 @click.option('-i', '--in-place', 'replace', default=False, help='make changes to files in place', is_flag=True)
-@click.option('-k', '--key', default=None, help=KEY_OPTION_HELP, type=click.STRING)
+@click.option('-k', '--key', default=None, help=KEY_OPTION_HELP, type=CustomParamType.KEY)
 @click.option('--with-license', default=False, help='Add license to encrypted file', is_flag=True)
-@click.option('-m', '--bind-mac', 'mac', default=None, help='Bind mac address to encrypted file', type=click.STRING)
-@click.option('-4', '--bind-ipv4', 'ipv4', default=None, help='Bind ipv4 address to encrypted file', type=click.STRING)
+@click.option('-m', '--bind-mac', 'mac', default=None, help='Bind mac address to encrypted file', type=CustomParamType.MAC_ADDR)
+@click.option('-4', '--bind-ipv4', 'ipv4', default=None, help='Bind ipv4 address to encrypted file', type=CustomParamType.IPV4_ADDR)
 @click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.confirmation_option('-y', '--yes', prompt='Are you sure you want to encrypt your python file?', help='Automatically answer yes for confirm questions.')
@@ -93,8 +150,6 @@ def cli():
 @click.pass_context
 def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before, after):
     """Encrypt your python code"""
-    if key is not None and not _check_key(key):
-        ctx.fail(INVALID_KEY_MSG)
     if key is None:
         key = generate_aes_key().decode()
         click.echo(f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}')
@@ -130,21 +185,19 @@ def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before
     generate_so_file(cipher_key, d, n)
     if with_license is True:
         generate_license_file(key, Path(os.getcwd()), after, before, mac, ipv4)
-        ctx.echo(FINISH_GENERATE_LICENSE_MSG)
+        click.echo(FINISH_GENERATE_LICENSE_MSG)
     click.echo(FINISH_ENCRYPT_MSG)
 
 
 @cli.command(name='decrypt')
 @click.argument('pathname', type=click.Path(exists=True, resolve_path=True))
 @click.option('-i', '--in-place', 'replace', default=False, help='make changes to files in place', is_flag=True)
-@click.option('-k', '--key', required=True, help='Your encryption key.', type=click.STRING)
+@click.option('-k', '--key', required=True, help='Your encryption key.', type=CustomParamType.KEY)
 @click.help_option('-h', '--help')
 @click.pass_context
 def decrypt_command(ctx, pathname, replace, key):
     """Decrypt encrypted pye file"""
     path = Path(pathname)
-    if not _check_key(key):
-        ctx.fail(INVALID_KEY_MSG)
 
     if path.is_file():
         if replace:
@@ -173,13 +226,11 @@ def decrypt_command(ctx, pathname, replace, key):
 
 
 @cli.command(name='generate')
-@click.option('-k', '--key', required=True, help='Your encryption key.', type=click.STRING)
+@click.option('-k', '--key', required=True, help='Your encryption key.', type=CustomParamType.KEY)
 @click.help_option('-h', '--help')
 @click.pass_context
 def generate_loader(ctx, key):
     """Generate loader file using specified key"""
-    if not _check_key(key):
-        ctx.fail(INVALID_KEY_MSG)
     cipher_key, d, n = encrypt_key(key.encode())
     generate_so_file(cipher_key, d, n, Path(os.getcwd()))
     click.echo(FINISH_GENERATE_LOADER_MSG)
@@ -187,16 +238,14 @@ def generate_loader(ctx, key):
 
 @cli.command(name='license')
 @click.help_option('-h', '--help')
-@click.option('-k', '--key', required=True, help='Your encryption key.', type=click.STRING)
-@click.option('-m', '--bind-mac', help='Your mac address.', type=click.STRING)
-@click.option('-4', '--bind-ipv4', help='Your ipv4 address.', type=click.STRING)
+@click.option('-k', '--key', required=True, help='Your encryption key.', type=CustomParamType.KEY)
+@click.option('-m', '--bind-mac', help='Your mac address.', type=CustomParamType.MAC_ADDR)
+@click.option('-4', '--bind-ipv4', help='Your ipv4 address.', type=CustomParamType.IPV4_ADDR)
 @click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.pass_context
 def generate_license(ctx, key, mac, ipv4, before, after):
     """Generate license file using specified key"""
-    if not _check_key(key):
-        ctx.fail(INVALID_KEY_MSG)
     if before > after:
         ctx.fail(INVALID_EXPIRED_MSG)
 
