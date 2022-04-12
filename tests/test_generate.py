@@ -1,5 +1,5 @@
 from random import randint
-from pyencrypt.generate import *
+from pyencrypt.generate import generate_aes_key, generate_rsa_number
 import pytest
 
 

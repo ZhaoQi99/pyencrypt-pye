@@ -55,7 +55,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, lic
     need_import_files = ['ntt.py', 'aes.py', 'decrypt.py', 'license.py']
     for file in need_import_files:
         file_path = path / file
-        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('',file_path.read_text()))
+        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('', file_path.read_text()))
 
     loader_source_path = path / 'loader.py'
     loader_source = REMOVE_SELF_IMPORT.sub('', loader_source_path.read_text()).replace(
@@ -103,6 +103,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, lic
         cmdclass={'build_ext': build_ext},
     )
     return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
+
 
 def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
     if not can_encrypt(path):

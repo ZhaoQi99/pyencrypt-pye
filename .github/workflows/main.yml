@@ -30,15 +30,16 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install setuptools==57.5.0
-        pip install flake8 pytest
+        pip install -r dev-requirement.txt
         pip install .
 
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # Run flake8 on Python files
+        flake8 pyencrypt --count --show-source --max-complexity=10 --statistics
+        # Run flake8 on test files
+        flake8 tests --count --show-source --max-complexity=10 --statistics --ignore F401,E501
+
     - name: Test with pytest
       run: |
         pytest

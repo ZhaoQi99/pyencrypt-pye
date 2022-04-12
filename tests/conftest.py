@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from pyencrypt.encrypt import encrypt_file, encrypt_key, generate_so_file
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import generate_license_file
@@ -21,19 +20,17 @@ def file_and_loader(request, tmp_path_factory):
     code = file_marker.kwargs.get('code')
 
     license_marker = request.node.get_closest_marker("license")
-    license, kwargs = False,{}
+    license, kwargs = False, {}
     if license_marker is not None:
         kwargs = license_marker.kwargs
         license = kwargs.pop('enable', True)
 
     file_path = tmp_path / f'{file_name}.py'
     file_path.touch()
-    file_path.write_text(
-    """\
+    file_path.write_text("""\
 def {function_name}():
 {code}
-    """.format(function_name=function_name, code=code)
-    )
+    """.format(function_name=function_name, code=code))
     # generate loader.so
     key = generate_aes_key()
     new_path = file_path.with_suffix('.pye')
@@ -47,10 +44,9 @@ def {function_name}():
     work_dir.joinpath('loader_origin.py').unlink()
 
     # License
-    license == True and generate_license_file(key.decode(), work_dir,**kwargs)
+    license and generate_license_file(key.decode(), work_dir, **kwargs)
     generate_license_file(key.decode(), work_dir)
     return (new_path, loader_path)
-
 
 
 @pytest.fixture(scope='function')
@@ -63,7 +59,7 @@ def package_and_loader(request, tmp_path_factory):
     code = file_marker.kwargs.get('code')
 
     license_marker = request.node.get_closest_marker("license")
-    license, kwargs = False,{}
+    license, kwargs = False, {}
     if license_marker is not None:
         kwargs = license_marker.kwargs
         license = kwargs.pop('enable', True)
@@ -92,5 +88,5 @@ def {function_name}():
     work_dir.joinpath('loader.c').unlink()
     work_dir.joinpath('loader_origin.py').unlink()
     # License
-    license == True and generate_license_file(key.decode(), work_dir, **kwargs)
+    license and generate_license_file(key.decode(), work_dir, **kwargs)
     return pkg_path, loader_path

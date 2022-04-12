@@ -7,12 +7,12 @@ def bitreverse(x: list, length: int):
     for i in range(0, length):
         if i > j:
             x[i], x[j] = x[j], x[i]
-        l = length >> 1
+        l = length >> 1  # noqa: E741
         while True:
             j = j ^ l
             if j >= l:
                 break
-            l >>= 1
+            l >>= 1  # noqa: E741
 
 
 def _ntt(arr: list, inverse=False):
@@ -51,4 +51,3 @@ def ntt(arr: list):
 
 def intt(arr: list):
     return _ntt(arr, True)
-

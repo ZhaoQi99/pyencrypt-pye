@@ -88,4 +88,4 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
 
 
 # TODO: generate randomly AES Class
-sys.meta_path.insert(0,EncryptFileFinder())
+sys.meta_path.insert(0, EncryptFileFinder())

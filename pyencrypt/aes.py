@@ -642,7 +642,7 @@ class AES(object):
         0x5d80be9f, 0x548db591, 0x4f9aa883, 0x4697a38d
     ]
 
-    def __init__(self, key):
+    def __init__(self, key):  # noqa: C901
 
         if len(key) not in (16, 24, 32):
             raise ValueError('Invalid key size')
@@ -675,10 +675,14 @@ class AES(object):
         while t < round_key_count:
 
             tt = tk[KC - 1]
-            tk[0] ^= ((self.S[(tt >> 16) & 0xFF] << 24) ^
-                      (self.S[(tt >> 8) & 0xFF] << 16) ^
-                      (self.S[tt & 0xFF] << 8) ^ self.S[(tt >> 24) & 0xFF] ^
-                      (self.rcon[rconpointer] << 24))
+            # noqa: W504
+            tk[0] ^= (
+                (self.S[(tt >> 16) & 0xFF] << 24) ^
+                (self.S[(tt >> 8) & 0xFF] << 16) ^
+                (self.S[tt & 0xFF] << 8) ^
+                self.S[(tt >> 24) & 0xFF] ^
+                (self.rcon[rconpointer] << 24)
+            )
             rconpointer += 1
 
             if KC != 8:
@@ -691,10 +695,12 @@ class AES(object):
                     tk[i] ^= tk[i - 1]
                 tt = tk[KC // 2 - 1]
 
-                tk[KC //
-                   2] ^= (self.S[tt & 0xFF] ^ (self.S[(tt >> 8) & 0xFF] << 8) ^
-                          (self.S[(tt >> 16) & 0xFF] << 16) ^
-                          (self.S[(tt >> 24) & 0xFF] << 24))
+                tk[KC // 2] ^= (
+                    self.S[tt & 0xFF] ^
+                    (self.S[(tt >> 8) & 0xFF] << 8) ^
+                    (self.S[(tt >> 16) & 0xFF] << 16) ^
+                    (self.S[(tt >> 24) & 0xFF] << 24)
+                )
 
                 for i in range(KC // 2 + 1, KC):
                     tk[i] ^= tk[i - 1]
@@ -711,10 +717,12 @@ class AES(object):
         for r in range(1, rounds):
             for j in range(0, 4):
                 tt = self._Kd[r][j]
-                self._Kd[r][j] = (self.U1[(tt >> 24) & 0xFF]
-                                  ^ self.U2[(tt >> 16) & 0xFF]
-                                  ^ self.U3[(tt >> 8) & 0xFF]
-                                  ^ self.U4[tt & 0xFF])
+                self._Kd[r][j] = (
+                    self.U1[(tt >> 24) & 0xFF] ^
+                    self.U2[(tt >> 16) & 0xFF] ^
+                    self.U3[(tt >> 8) & 0xFF] ^
+                    self.U4[tt & 0xFF]
+                )
 
     def encrypt(self, plaintext):
         'Encrypt a block of plain text using the AES block cipher.'
@@ -733,10 +741,13 @@ class AES(object):
         # Apply round transforms
         for r in range(1, rounds):
             for i in range(0, 4):
-                a[i] = (self.T1[(t[i] >> 24) & 0xFF]
-                        ^ self.T2[(t[(i + s1) % 4] >> 16) & 0xFF]
-                        ^ self.T3[(t[(i + s2) % 4] >> 8) & 0xFF]
-                        ^ self.T4[t[(i + s3) % 4] & 0xFF] ^ self._Ke[r][i])
+                a[i] = (
+                    self.T1[(t[i] >> 24) & 0xFF] ^
+                    self.T2[(t[(i + s1) % 4] >> 16) & 0xFF] ^
+                    self.T3[(t[(i + s2) % 4] >> 8) & 0xFF] ^
+                    self.T4[t[(i + s3) % 4] & 0xFF] ^
+                    self._Ke[r][i]
+                )
             t = copy.copy(a)
 
         # The last round is special
@@ -744,10 +755,8 @@ class AES(object):
         for i in range(0, 4):
             tt = self._Ke[rounds][i]
             result.append((self.S[(t[i] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
-            result.append((self.S[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16))
-                          & 0xFF)
-            result.append((self.S[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8))
-                          & 0xFF)
+            result.append((self.S[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
+            result.append((self.S[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8)) & 0xFF)
             result.append((self.S[t[(i + s3) % 4] & 0xFF] ^ tt) & 0xFF)
 
         return result
@@ -769,10 +778,12 @@ class AES(object):
         # Apply round transforms
         for r in range(1, rounds):
             for i in range(0, 4):
-                a[i] = (self.T5[(t[i] >> 24) & 0xFF]
-                        ^ self.T6[(t[(i + s1) % 4] >> 16) & 0xFF]
-                        ^ self.T7[(t[(i + s2) % 4] >> 8) & 0xFF]
-                        ^ self.T8[t[(i + s3) % 4] & 0xFF] ^ self._Kd[r][i])
+                a[i] = (
+                    self.T5[(t[i] >> 24) & 0xFF] ^
+                    self.T6[(t[(i + s1) % 4] >> 16) & 0xFF] ^
+                    self.T7[(t[(i + s2) % 4] >> 8) & 0xFF] ^
+                    self.T8[t[(i + s3) % 4] & 0xFF] ^ self._Kd[r][i]
+                )
             t = copy.copy(a)
 
         # The last round is special
@@ -780,10 +791,8 @@ class AES(object):
         for i in range(0, 4):
             tt = self._Kd[rounds][i]
             result.append((self.Si[(t[i] >> 24) & 0xFF] ^ (tt >> 24)) & 0xFF)
-            result.append((self.Si[(t[(i + s1) % 4] >> 16) & 0xFF]
-                           ^ (tt >> 16)) & 0xFF)
-            result.append((self.Si[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8))
-                          & 0xFF)
+            result.append((self.Si[(t[(i + s1) % 4] >> 16) & 0xFF] ^ (tt >> 16)) & 0xFF)
+            result.append((self.Si[(t[(i + s2) % 4] >> 8) & 0xFF] ^ (tt >> 8)) & 0xFF)
             result.append((self.Si[t[(i + s3) % 4] & 0xFF] ^ tt) & 0xFF)
 
         return result
@@ -791,6 +800,7 @@ class AES(object):
 
 class AESBlockModeOfOperation(object):
     '''Super-class for AES modes of operation that require blocks.'''
+
     def __init__(self, key):
         self._aes = AES(key)
 
@@ -847,4 +857,3 @@ def aes_decrypt(data: bytes, key: str) -> bytes:
     for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
         plain.append(AESModeOfOperationECB(key).decrypt(x))
     return strip_padding(b''.join(plain))
-

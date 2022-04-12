@@ -15,7 +15,7 @@ from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key,
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
 
-VERSION = f"""\
+VERSION = fr"""
                                                       _
          _ __  _   _  ___ _ __   ___ _ __ _   _ _ __ | |_
         | '_ \| | | |/ _ \ '_ \ / __| '__| | | | '_ \| __|
@@ -29,9 +29,8 @@ VERSION = f"""\
 """
 
 KEY_OPTION_HELP = """
-Your encryption key.If you don‘t specify key,
+Your encryption key.If you don't specify key,
 pyencrypt will generate encryption key randomly.
-
 """
 
 PYTHON_MAJOR, PYTHON_MINOR = sys.version_info[:2]
@@ -122,6 +121,7 @@ class IPv4AddressParamType(click.ParamType):
 
     def __repr__(self) -> str:
         return "Ipv4Address"
+
 
 class CustomParamType:
     KEY = KeyParamType()

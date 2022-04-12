@@ -1,11 +1,12 @@
-import shutil
-import pytest
-from pyencrypt.encrypt import *
-from pyencrypt.decrypt import *
 import os
+from pathlib import Path
+import shutil
+
+import pytest
+from pyencrypt.encrypt import can_encrypt, encrypt_file, encrypt_key, generate_so_file
+from pyencrypt.generate import generate_aes_key
 
 from constants import AES_KEY
-from pyencrypt.generate import generate_aes_key
 
 
 @pytest.mark.parametrize('key', [
@@ -44,8 +45,8 @@ class TestGenarateSoFile:
     def test_generate_so_file(self, key, tmp_path):
         cipher_key, d, n = encrypt_key(key)
         assert generate_so_file(cipher_key, d, n, tmp_path)
-        assert (tmp_path / 'encrypted' / 'loader.py').exists() == True
-        assert (tmp_path / 'encrypted' / 'loader_origin.py').exists() == True
+        assert (tmp_path / 'encrypted' / 'loader.py').exists() is True
+        assert (tmp_path / 'encrypted' / 'loader_origin.py').exists() is True
         assert list((tmp_path / 'encrypted').glob('loader.cpython-*-*.so')) != []
 
     @pytest.mark.parametrize('key', [
@@ -55,8 +56,8 @@ class TestGenarateSoFile:
     def test_generate_so_file_default_path(self, key):
         cipher_key, d, n = encrypt_key(key)
         assert generate_so_file(cipher_key, d, n)
-        assert (Path(os.getcwd()) / 'encrypted' / 'loader.py').exists() == True
-        assert (Path(os.getcwd()) / 'encrypted' / 'loader_origin.py').exists() == True
+        assert (Path(os.getcwd()) / 'encrypted' / 'loader.py').exists() is True
+        assert (Path(os.getcwd()) / 'encrypted' / 'loader_origin.py').exists() is True
         assert list((Path(os.getcwd()) / 'encrypted').glob('loader.cpython-*-*.so')) != []
 
 
@@ -83,20 +84,20 @@ def python_file_path(tmp_path):
 
 
 def test_encrypt_file_default(python_file_path):
-    assert isinstance(encrypt_file(python_file_path, AES_KEY), bytes) == True
-    assert python_file_path.exists() == True
+    assert isinstance(encrypt_file(python_file_path, AES_KEY), bytes) is True
+    assert python_file_path.exists() is True
 
 
 def test_encrypt_file_delete_origin(python_file_path):
     encrypt_file(python_file_path, AES_KEY, delete_origin=True)
-    assert python_file_path.exists() == False
+    assert python_file_path.exists() is False
 
 
 def test_encrypt_file_new_path(python_file_path):
     new_path = python_file_path.parent / 'test.pye'
     encrypt_file(python_file_path, AES_KEY, new_path=new_path)
-    assert new_path.exists() == True
-    assert python_file_path.exists() == True
+    assert new_path.exists() is True
+    assert python_file_path.exists() is True
 
 
 def test_encrypt_file_new_path_exception(python_file_path):

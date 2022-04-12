@@ -1,4 +1,4 @@
-from pyencrypt.aes import AESModeOfOperationECB, add_padding, aes_encrypt, aes_decrypt
+from pyencrypt.aes import AESModeOfOperationECB, aes_encrypt, aes_decrypt
 import pytest
 
 from constants import AES_KEY

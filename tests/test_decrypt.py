@@ -1,9 +1,11 @@
-from pyencrypt.decrypt import *
-from pyencrypt.encrypt import encrypt_file, encrypt_key
-from constants import AES_KEY
-import pytest
+from pathlib import Path
 
+import pytest
+from pyencrypt.decrypt import decrypt_key, decrypt_file
+from pyencrypt.encrypt import encrypt_file, encrypt_key
 from pyencrypt.generate import generate_aes_key
+
+from constants import AES_KEY
 
 
 @pytest.mark.parametrize('key', [
@@ -39,20 +41,20 @@ def test_decrypt_file_exception(path, key, exception):
 
 
 def test_decrypt_file_default(encrypted_python_file_path):
-    assert isinstance(decrypt_file(encrypted_python_file_path, AES_KEY), bytes) == True
-    assert encrypted_python_file_path.exists() == True
+    assert isinstance(decrypt_file(encrypted_python_file_path, AES_KEY), bytes) is True
+    assert encrypted_python_file_path.exists() is True
 
 
 def test_decrypt_file_delete_origin(encrypted_python_file_path):
     decrypt_file(encrypted_python_file_path, AES_KEY, delete_origin=True)
-    assert encrypted_python_file_path.exists() == False
+    assert encrypted_python_file_path.exists() is False
 
 
 def test_decrypt_file_new_path(encrypted_python_file_path):
     new_path = encrypted_python_file_path.parent / 'test.py'
     decrypt_file(encrypted_python_file_path, AES_KEY, new_path=new_path)
-    assert new_path.exists() == True
-    assert encrypted_python_file_path.exists() == True
+    assert new_path.exists() is True
+    assert encrypted_python_file_path.exists() is True
 
 
 def test_decrypt_file_new_path_exception(encrypted_python_file_path):

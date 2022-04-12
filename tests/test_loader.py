@@ -8,7 +8,7 @@ import pytest
 DEAFULT_META_PATH = sys.meta_path[::]
 
 
-@pytest.mark.file(name='file1',function='test_file_1',code='\treturn "This is file test1"')
+@pytest.mark.file(name='file1', function='test_file_1', code='\treturn "This is file test1"')
 def test_python_file_sys_path(file_and_loader: Tuple[Path], monkeypatch):
     file_path, loader_path = file_and_loader
     monkeypatch.syspath_prepend(file_path.parent.as_posix())
@@ -21,6 +21,7 @@ def test_python_file_sys_path(file_and_loader: Tuple[Path], monkeypatch):
     from file1 import test_file_1
 
     assert test_file_1() == 'This is file test1'
+
 
 @pytest.mark.license(enable=True)
 @pytest.mark.file(name='file2', function='test_file_2', code='\treturn "This is file test2"')
@@ -39,7 +40,7 @@ def test_python_file_sys_path_with_license(file_and_loader: Tuple[Path], monkeyp
 
 
 @pytest.mark.license(enable=True)
-@pytest.mark.file(name='file3',function='test_file_3',code='\treturn "This is file test3"')
+@pytest.mark.file(name='file3', function='test_file_3', code='\treturn "This is file test3"')
 def test_python_file_sys_path_with_license_not_found(file_and_loader: Tuple[Path], monkeypatch):
     file_path, loader_path = file_and_loader
     monkeypatch.syspath_prepend(file_path.parent.as_posix())
@@ -57,6 +58,7 @@ def test_python_file_sys_path_with_license_not_found(file_and_loader: Tuple[Path
 
     assert str(excinfo.value) == 'Could not find license file.'
 
+
 # Package
 @pytest.mark.package(name='pkg1.a.b.c', function='test_package_1', code='\treturn "This is package test1"')
 def test_python_package(package_and_loader: Tuple[Path], monkeypatch):
@@ -67,11 +69,11 @@ def test_python_package(package_and_loader: Tuple[Path], monkeypatch):
     sys.modules.pop('loader', None)
     sys.meta_path = DEAFULT_META_PATH.copy()
 
-
     import loader
     from pkg1.a.b.c import test_package_1
 
     assert test_package_1() == 'This is package test1'
+
 
 @pytest.mark.package(name='pkg2.a.b.c', function='test_package_2', code='\treturn "This is package test2"')
 def test_python_package_without_init_file(package_and_loader: Tuple[Path], monkeypatch):
