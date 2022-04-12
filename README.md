@@ -50,12 +50,13 @@ Usage: pyencrypt encrypt [OPTIONS] PATHNAME
 
 Options:
   -i, --in-place                  make changes to files in place
-  -k, --key TEXT                  Your encryption key.If you don‘t specify
+  -k, --key 🔑                     Your encryption key.If you don‘t specify
                                   key, pyencrypt will generate encryption key
                                   randomly.
   --with-license                  Add license to encrypted file
-  -m, --bind-mac TEXT             Bind mac address to encrypted file
-  -4, --bind-ipv4 TEXT            Bind ipv4 address to encrypted file
+  -m, --bind-mac 01:23:45:67:89:AB
+                                  Bind mac address to encrypted file
+  -4, --bind-ipv4 192.168.0.1     Bind ipv4 address to encrypted file
   -b, --before [%Y-%m-%dT%H:%M:%S %z|%Y-%m-%d %H:%M:%S|%Y-%m-%d]
                                   License is invalid before this date.
   -a, --after [%Y-%m-%dT%H:%M:%S %z|%Y-%m-%d %H:%M:%S|%Y-%m-%d]
@@ -84,7 +85,7 @@ Usage: pyencrypt decrypt [OPTIONS] PATHNAME
 
 Options:
   -i, --in-place  make changes to files in place
-  -k, --key TEXT  Your encryption key.  [required]
+  -k, --key 🔑     Your encryption key.  [required]
   -h, --help      Show this message and exit.
 ```
 
@@ -97,8 +98,8 @@ Usage: pyencrypt generate [OPTIONS]
   Generate loader file using specified key
 
 Options:
-  -k, --key TEXT  Your encryption key.  [required]
-  -h, --help      Show this message and exit.
+  -k, --key 🔑  Your encryption key.  [required]
+  -h, --help   Show this message and exit.
 ```
 
 ### License
@@ -112,7 +113,7 @@ pyencrypt's loader will search for the license file in the following manner:
 3. `licenses/license.lic` file in the current working directory.
 
 ```shell
-   ~$ pyencrypt license -h
+~$ pyencrypt license -h
    Usage: pyencrypt license [OPTIONS]
 
    Generate license file  using specified key
