@@ -44,9 +44,14 @@ LAODER_FILE_NAME = click.style(
 LICENSE_FILE_NAME = click.style("license.lic", blink=True, fg='blue')
 
 SUCCESS_ANSI = click.style('successfully', fg='green')
+
 INVALID_KEY_MSG = click.style('Your encryption 🔑 is invalid.', fg='red')
 
-INVALID_EXPIRED_MSG = 'Expired before date must be less than expired after date.'
+INVALID_MAC_MSG = click.style('{} is not a valid mac address.', fg='red')
+
+INVALID_IPV4_MSG = click.style('{} is not a valid ipv4 address.', fg='red')
+
+INVALID_DATETIME_MSG = click.style('Before date must be less than after date.', fg='red')
 
 FINISH_ENCRYPT_MSG = f"""
 Encryption completed {SUCCESS_ANSI}.
@@ -96,7 +101,7 @@ class MacAddressParamType(click.ParamType):
     def convert(self, value, param, ctx) -> str:
         value = click.STRING.convert(value, param, ctx)
         if not self.pattern.match(value):
-            self.fail(f'{value} is not a valid mac address', param, ctx)
+            self.fail(INVALID_MAC_MSG.format(value), param, ctx)
         return value
 
     def get_metavar(self, param):
@@ -114,7 +119,7 @@ class IPv4AddressParamType(click.ParamType):
         try:
             return str(ipaddress.IPv4Address(value))
         except ValueError:
-            self.fail(f'{value} is not a valid IPv4 Address', param, ctx)
+            self.fail(INVALID_IPV4_MSG.format(value), param, ctx)
 
     def get_metavar(self, param):
         return '192.168.0.1'
@@ -155,7 +160,7 @@ def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before
         click.echo(f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}')
 
     if before > after:
-        ctx.fail(INVALID_EXPIRED_MSG)
+        ctx.fail(INVALID_DATETIME_MSG)
 
     path = Path(pathname)
 
@@ -247,7 +252,7 @@ def generate_loader(ctx, key):
 def generate_license(ctx, key, mac, ipv4, before, after):
     """Generate license file using specified key"""
     if before > after:
-        ctx.fail(INVALID_EXPIRED_MSG)
+        ctx.fail(INVALID_DATETIME_MSG)
 
     generate_license_file(key, Path(os.getcwd()), after, before, mac, ipv4)
     click.echo(FINISH_GENERATE_LICENSE_MSG)
