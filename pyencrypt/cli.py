@@ -148,8 +148,8 @@ def cli():
 @click.option('--with-license', default=False, help='Add license to encrypted file', is_flag=True)
 @click.option('-m', '--bind-mac', 'mac', default=None, help='Bind mac address to encrypted file', type=CustomParamType.MAC_ADDR)
 @click.option('-4', '--bind-ipv4', 'ipv4', default=None, help='Bind ipv4 address to encrypted file', type=CustomParamType.IPV4_ADDR)
-@click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
-@click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-b', '--before', default=MIN_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-a', '--after', default=MAX_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.confirmation_option('-y', '--yes', prompt='Are you sure you want to encrypt your python file?', help='Automatically answer yes for confirm questions.')
 @click.help_option('-h', '--help')
 @click.pass_context
@@ -246,8 +246,8 @@ def generate_loader(ctx, key):
 @click.option('-k', '--key', required=True, help='Your encryption key.', type=CustomParamType.KEY)
 @click.option('-m', '--bind-mac', help='Your mac address.', type=CustomParamType.MAC_ADDR)
 @click.option('-4', '--bind-ipv4', help='Your ipv4 address.', type=CustomParamType.IPV4_ADDR)
-@click.option('-b', '--before', default=MAX_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
-@click.option('-a', '--after', default=MIN_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-b', '--before', default=MIN_DATETIME, help='License is invalid before this date.', type=click.DateTime(formats=DATETIME_FORMATS))
+@click.option('-a', '--after', default=MAX_DATETIME, help='License is invalid after this date.', type=click.DateTime(formats=DATETIME_FORMATS))
 @click.pass_context
 def generate_license(ctx, key, mac, ipv4, before, after):
     """Generate license file using specified key"""
