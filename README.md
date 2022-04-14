@@ -120,9 +120,10 @@ pyencrypt's loader will search for the license file in the following manner:
 
 Options:
   -h, --help                      Show this message and exit.
-  -k, --key TEXT                  Your encryption key.  [required]
-  -m, --bind-mac TEXT             Your mac address.
-  -4, --bind-ipv4 TEXT            Your ipv4 address.
+  -k, --key 🔑     Your encryption key.  [required]
+  -m, --bind-mac 01:23:45:67:89:AB
+                                  Bind mac address to encrypted file
+  -4, --bind-ipv4 192.168.0.1     Bind ipv4 address to encrypted file
   -b, --before [%Y-%m-%dT%H:%M:%S %z|%Y-%m-%d %H:%M:%S|%Y-%m-%d]
                                   License is invalid before this date.
   -a, --after [%Y-%m-%dT%H:%M:%S %z|%Y-%m-%d %H:%M:%S|%Y-%m-%d]
