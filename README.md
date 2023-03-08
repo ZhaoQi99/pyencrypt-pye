@@ -22,10 +22,10 @@ https://github.com/ZhaoQi99/pyencrypt-pye/wiki#how-to-do
 ## Install
 
 ```bash
-pip install git+https://github.com/ZhaoQi99/pyencrypt-pye.git
+pip install pyencrypt-pye
 ✨🍰✨
 ```
-
+Or you can use `pip install git+https://github.com/ZhaoQi99/pyencrypt-pye.git` install latest version.
 ## Usage
 
 ```shell
