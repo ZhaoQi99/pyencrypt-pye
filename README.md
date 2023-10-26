@@ -1,6 +1,7 @@
 # pyencrypt-pye 
 
 ---
+[![Python package](https://github.com/ZhaoQi99/pyencrypt-pye/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/ZhaoQi99/pyencrypt-pye/actions/workflows/main.yml)
 [![Python version](https://img.shields.io/pypi/pyversions/pyencrypt-pye.svg?logo=python)](https://pypi.python.org/pypi/pyencrypt-pye)
 [![PyPI package](https://img.shields.io/pypi/v/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye) 
 [![PyPI download](https://img.shields.io/pypi/dm/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye)
