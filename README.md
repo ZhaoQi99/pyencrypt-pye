@@ -1,6 +1,11 @@
-# pyencrypt-pye
+# pyencrypt-pye 
 
 ---
+[![Python version](https://img.shields.io/pypi/pyversions/pyencrypt-pye.svg?logo=python)](https://pypi.python.org/pypi/pyencrypt-pye)
+[![PyPI package](https://img.shields.io/pypi/v/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye) 
+[![PyPI download](https://img.shields.io/pypi/dm/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye)
+[![GitHub](https://img.shields.io/github/license/ZhaoQi99/pyencrypt-pye)](https://github.com/ZhaoQi99/pyencrypt-pye/blob/main/LICENSE) 
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/ZhaoQi99/pyencrypt-pye) 
 
 encrypt python source code and import module dynamically.
 
