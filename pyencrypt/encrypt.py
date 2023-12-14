@@ -1,7 +1,8 @@
 import os
 import re
-import subprocess
 from pathlib import Path
+
+import python_minifier
 
 from pyencrypt.aes import aes_encrypt
 from pyencrypt.generate import generate_rsa_number
@@ -73,28 +74,17 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, lic
     loader_file_path.touch(exist_ok=True)
 
     decrypt_source = '\n'.join(decrypt_source_ls)
-    loader_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
     # Origin file
     loader_origin_file_path = temp_dir / 'loader_origin.py'
     loader_origin_file_path.touch(exist_ok=True)
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
-    args = [
-        'pyminifier',
-        '--obfuscate-classes',
-        '--obfuscate-import-methods',
-        '--replacement-length',
-        '20',
-        '-o',
-        loader_file_path.as_posix(),
-        loader_file_path.as_posix(),
-    ]
-    ret = subprocess.run(args, shell=False, encoding='utf-8')
-    if ret.returncode == 0:
-        pass
+    loader_file_path.write_text(
+        python_minifier.minify(loader_origin_file_path.read_text())
+    )
 
-    from setuptools import setup
+    from setuptools import setup  # isort:skip
     from Cython.Build import cythonize
     from Cython.Distutils import build_ext
     setup(
