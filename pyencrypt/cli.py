@@ -187,7 +187,7 @@ def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before
         raise Exception(f'{path} is not a valid path.')
 
     cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
-    generate_so_file(cipher_key, d, n)
+    generate_so_file(cipher_key, d, n, license=with_license)
     if with_license is True:
         generate_license_file(key, Path(os.getcwd()), after, before, mac, ipv4)
         click.echo(FINISH_GENERATE_LICENSE_MSG)
