@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+from typing import Optional
 
 import python_minifier
 
@@ -17,7 +18,7 @@ REMOVE_SELF_IMPORT = re.compile(r'^from pyencrypt\.[\s\S]*?$', re.MULTILINE)
 
 def _encrypt_file(
     data: bytes,
-    key: bytes,
+    key: str,
 ) -> bytes:
     return aes_encrypt(data, key)
 
@@ -32,7 +33,7 @@ def can_encrypt(path: Path) -> bool:
     return True
 
 
-def encrypt_key(key: bytes) -> str:
+def encrypt_key(key: bytes):
     ascii_ls = [ord(x) for x in key.decode()]
     numbers = generate_rsa_number(2048)
     e, n = numbers['e'], numbers['n']
@@ -48,7 +49,7 @@ def encrypt_key(key: bytes) -> str:
     return 'O'.join(map(str, cipher_ls)), numbers['d'], numbers['n']
 
 
-def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, license: bool = False) -> Path:
+def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] = None, license: bool = False) -> Path:
     private_key = f'{n}O{d}'
     path = Path(os.path.abspath(__file__)).parent
 
@@ -80,9 +81,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, lic
     loader_origin_file_path.touch(exist_ok=True)
     loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
 
-    loader_file_path.write_text(
-        python_minifier.minify(loader_origin_file_path.read_text())
-    )
+    loader_file_path.write_text(python_minifier.minify(loader_origin_file_path.read_text()))
 
     from setuptools import setup  # isort:skip
     from Cython.Build import cythonize
@@ -95,7 +94,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Path = None, lic
     return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
 
 
-def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Path = None):
+def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Optional[Path] = None):
     if not can_encrypt(path):
         raise Exception(f"{path.name} can't be encrypted.")
     encrypted_data = _encrypt_file(path.read_bytes(), key)
