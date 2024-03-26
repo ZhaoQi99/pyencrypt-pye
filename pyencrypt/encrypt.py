@@ -57,13 +57,14 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
     need_import_files = ['ntt.py', 'aes.py', 'decrypt.py', 'license.py']
     for file in need_import_files:
         file_path = path / file
-        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('', file_path.read_text()))
+        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('', file_path.read_text(encoding="utf-8")))
 
     loader_source_path = path / 'loader.py'
-    loader_source = REMOVE_SELF_IMPORT.sub('', loader_source_path.read_text()).replace(
-        "__private_key = ''", f"__private_key = '{private_key}'", 1
-    ).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1).replace(
-        'license = None', f'license = {license}', 1
+    loader_source = (
+        REMOVE_SELF_IMPORT.sub("", loader_source_path.read_text(encoding="utf-8"))
+        .replace("__private_key = ''", f"__private_key = '{private_key}'", 1)
+        .replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1)
+        .replace("license = None", f"license = {license}", 1)
     )
 
     if base_dir is None:
@@ -79,9 +80,14 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
     # Origin file
     loader_origin_file_path = temp_dir / 'loader_origin.py'
     loader_origin_file_path.touch(exist_ok=True)
-    loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
+    loader_origin_file_path.write_text(
+        f"{decrypt_source}\n{loader_source}", encoding="utf-8"
+    )
 
-    loader_file_path.write_text(python_minifier.minify(loader_origin_file_path.read_text()))
+    loader_file_path.write_text(
+        python_minifier.minify(loader_origin_file_path.read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
 
     from setuptools import setup  # isort:skip
     from Cython.Build import cythonize
