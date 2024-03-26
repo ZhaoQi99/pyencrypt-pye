@@ -177,7 +177,7 @@ Options:
 ### Format Code
 
 ```shell
-yapf --recursive -i pyencrypt 
+black pyencrypt 
 isort pyencrypt
 ```
 
