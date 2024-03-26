@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 from pathlib import Path
 from typing import Optional
@@ -57,13 +58,14 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
     need_import_files = ['ntt.py', 'aes.py', 'decrypt.py', 'license.py']
     for file in need_import_files:
         file_path = path / file
-        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('', file_path.read_text()))
+        decrypt_source_ls.append(REMOVE_SELF_IMPORT.sub('', file_path.read_text(encoding="utf-8")))
 
     loader_source_path = path / 'loader.py'
-    loader_source = REMOVE_SELF_IMPORT.sub('', loader_source_path.read_text()).replace(
-        "__private_key = ''", f"__private_key = '{private_key}'", 1
-    ).replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1).replace(
-        'license = None', f'license = {license}', 1
+    loader_source = (
+        REMOVE_SELF_IMPORT.sub("", loader_source_path.read_text(encoding="utf-8"))
+        .replace("__private_key = ''", f"__private_key = '{private_key}'", 1)
+        .replace("__cipher_key = ''", f"__cipher_key = '{cipher_key}'", 1)
+        .replace("license = None", f"license = {license}", 1)
     )
 
     if base_dir is None:
@@ -79,9 +81,14 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
     # Origin file
     loader_origin_file_path = temp_dir / 'loader_origin.py'
     loader_origin_file_path.touch(exist_ok=True)
-    loader_origin_file_path.write_text(f"{decrypt_source}\n{loader_source}")
+    loader_origin_file_path.write_text(
+        f"{decrypt_source}\n{loader_source}", encoding="utf-8"
+    )
 
-    loader_file_path.write_text(python_minifier.minify(loader_origin_file_path.read_text()))
+    loader_file_path.write_text(
+        python_minifier.minify(loader_origin_file_path.read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
 
     from setuptools import setup  # isort:skip
     from Cython.Build import cythonize
@@ -91,7 +98,18 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
         script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
         cmdclass={'build_ext': build_ext},
     )
-    return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
+    if sys.platform.startswith('win'):
+        # loader.cp36-win_amd64.pyd
+        pattern = 'loader.cp*-*.pyd'
+    else:
+        # loader.cpython-36m-x86_64-linux-gnu.so
+        # loader.cpython-36m-darwin.so
+        pattern = "loader.cpython-*-*.so"
+
+    loader_extension = next(temp_dir.glob(pattern), None)
+    if loader_extension is None:
+        raise Exception(f"Can't find loader extension in {temp_dir.as_posix()}")
+    return loader_extension.absolute()
 
 
 def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Optional[Path] = None):

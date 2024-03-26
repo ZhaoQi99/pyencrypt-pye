@@ -12,7 +12,7 @@ from pyencrypt.aes import aes_encrypt
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%S%z'
 MIN_DATETIME = datetime.now().astimezone()
-MAX_DATETIME = datetime.max.replace(year=9998).astimezone()
+MAX_DATETIME = datetime(year=2999, month=12, day=31).astimezone()
 
 
 def get_mac_address() -> str:

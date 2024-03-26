@@ -81,7 +81,7 @@ class TestGenerateLicense:
         license_file_path = generate_license_file(key, path=tmp_path)
         license_data = json.loads(license_file_path.read_text())
         license_data['signature'] = 'invalid'
-        license_file_path.write_text(json.dumps(license_data))
+        license_file_path.write_text(json.dumps(license_data), encoding='utf-8')
         with pytest.raises(Exception) as excinfo:
             check_license(license_file_path, key)
         assert str(excinfo.value) == 'License signature is invalid.'

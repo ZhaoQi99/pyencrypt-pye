@@ -30,7 +30,7 @@ def file_and_loader(request, tmp_path_factory):
     file_path.write_text("""\
 def {function_name}():
 {code}
-    """.format(function_name=function_name, code=code))
+    """.format(function_name=function_name, code=code), encoding='utf-8')
     # generate loader.so
     key = generate_aes_key()
     new_path = file_path.with_suffix('.pye')
@@ -74,7 +74,7 @@ def package_and_loader(request, tmp_path_factory):
     file_path.write_text("""\
 def {function_name}():
 {code}
-    """.format(function_name=function_name, code=code))
+    """.format(function_name=function_name, code=code), encoding='utf-8')
 
     new_path = file_path.with_suffix('.pye')
     key = generate_aes_key()

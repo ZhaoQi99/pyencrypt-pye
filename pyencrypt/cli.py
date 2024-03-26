@@ -10,8 +10,7 @@ import click
 
 from pyencrypt import __description__, __version__
 from pyencrypt.decrypt import decrypt_file
-from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key,
-                               generate_so_file)
+from pyencrypt.encrypt import (can_encrypt, encrypt_file, encrypt_key, generate_so_file)
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
 
@@ -34,13 +33,7 @@ pyencrypt will generate encryption key randomly.
 """
 
 PYTHON_MAJOR, PYTHON_MINOR = sys.version_info[:2]
-LAODER_FILE_NAME = click.style(
-    "encrypted/loader.cpython-{major}{minor}{abi}-{platform}.so".format(
-        major=PYTHON_MAJOR, minor=PYTHON_MINOR, abi=sys.abiflags, platform=sys.platform
-    ),
-    blink=True,
-    fg='blue'
-)
+LOADER_FILE_NAME = click.style("encrypted/{}", blink=True, fg='blue')
 LICENSE_FILE_NAME = click.style("license.lic", blink=True, fg='blue')
 
 SUCCESS_ANSI = click.style('successfully', fg='green')
@@ -55,17 +48,17 @@ INVALID_DATETIME_MSG = click.style('Before date must be less than after date.', 
 
 FINISH_ENCRYPT_MSG = f"""
 Encryption completed {SUCCESS_ANSI}.
-Please copy {LAODER_FILE_NAME} into your encrypted directory.
+Please copy {LOADER_FILE_NAME} into your encrypted directory.
 And then remove `encrypted` directory.
 Finally, add `import loader` at the top of your entry file.\
 """
 
 FINISH_DECRYPT_MSG = f"""
-Decryption completed {SUCCESS_ANSI}. Your origin source code has be put: %s
+Decryption completed {SUCCESS_ANSI}. Your origin source code has be put: {{work_dir}}
 """
 
 FINISH_GENERATE_LOADER_MSG = f"""
-Generate loader file {SUCCESS_ANSI}. Your loader file is located in {LAODER_FILE_NAME}
+Generate loader file {SUCCESS_ANSI}. Your loader file is located in {LOADER_FILE_NAME}
 """
 
 FINISH_GENERATE_LICENSE_MSG = f"""
@@ -187,11 +180,11 @@ def encrypt_command(ctx, pathname, replace, key, with_license, mac, ipv4, before
         raise Exception(f'{path} is not a valid path.')
 
     cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
-    generate_so_file(cipher_key, d, n, license=with_license)
+    loader_extension = generate_so_file(cipher_key, d, n, license=with_license)
     if with_license is True:
         generate_license_file(key, Path(os.getcwd()), after, before, mac, ipv4)
         click.echo(FINISH_GENERATE_LICENSE_MSG)
-    click.echo(FINISH_ENCRYPT_MSG)
+    click.echo(FINISH_ENCRYPT_MSG.format(loader_extension.name))
 
 
 @cli.command(name='decrypt')
@@ -227,7 +220,7 @@ def decrypt_command(ctx, pathname, replace, key):
     else:
         raise Exception(f'{path} is not a valid path.')
 
-    click.echo(FINISH_DECRYPT_MSG % work_dir)
+    click.echo(FINISH_DECRYPT_MSG.format(work_dir=work_dir))
 
 
 @cli.command(name='generate')
@@ -237,8 +230,8 @@ def decrypt_command(ctx, pathname, replace, key):
 def generate_loader(ctx, key):
     """Generate loader file using specified key"""
     cipher_key, d, n = encrypt_key(key.encode())
-    generate_so_file(cipher_key, d, n, Path(os.getcwd()))
-    click.echo(FINISH_GENERATE_LOADER_MSG)
+    loader_extension = generate_so_file(cipher_key, d, n, Path(os.getcwd()))
+    click.echo(FINISH_GENERATE_LOADER_MSG.format(loader_extension.name))
 
 
 @cli.command(name='license')
