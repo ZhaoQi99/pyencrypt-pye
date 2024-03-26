@@ -1,3 +1,4 @@
+# fmt: off
 import base64
 import copy
 import struct
@@ -32,9 +33,9 @@ def strip_padding(data: bytes) -> bytes:
 # Based *largely* on the Rijndael implementation
 # See: http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
 class AES(object):
-    '''Encapsulates the AES block cipher.
+    """Encapsulates the AES block cipher.
     You generally should not need this. Use the AESModeOfOperation classes
-    below instead.'''
+    below instead."""
 
     # Number of rounds by keysize
     number_of_rounds = {16: 10, 24: 12, 32: 14}
@@ -43,7 +44,7 @@ class AES(object):
     rcon = [
         0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8,
         0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4,
-        0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91
+        0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91,
     ]
 
     # S-box and Inverse S-box (S is for Substitution)
@@ -69,7 +70,7 @@ class AES(object):
         0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e, 0xe1, 0xf8, 0x98, 0x11,
         0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f,
-        0xb0, 0x54, 0xbb, 0x16
+        0xb0, 0x54, 0xbb, 0x16,
     ]
     Si = [
         0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e,
@@ -93,7 +94,7 @@ class AES(object):
         0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef, 0xa0, 0xe0, 0x3b, 0x4d,
         0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
         0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63,
-        0x55, 0x21, 0x0c, 0x7d
+        0x55, 0x21, 0x0c, 0x7d,
     ]
 
     # Transformations for encryption
@@ -140,7 +141,7 @@ class AES(object):
         0x15878792, 0xc9e9e920, 0x87cece49, 0xaa5555ff, 0x50282878, 0xa5dfdf7a,
         0x038c8c8f, 0x59a1a1f8, 0x09898980, 0x1a0d0d17, 0x65bfbfda, 0xd7e6e631,
         0x844242c6, 0xd06868b8, 0x824141c3, 0x299999b0, 0x5a2d2d77, 0x1e0f0f11,
-        0x7bb0b0cb, 0xa85454fc, 0x6dbbbbd6, 0x2c16163a
+        0x7bb0b0cb, 0xa85454fc, 0x6dbbbbd6, 0x2c16163a,
     ]
     T2 = [
         0xa5c66363, 0x84f87c7c, 0x99ee7777, 0x8df67b7b, 0x0dfff2f2, 0xbdd66b6b,
@@ -185,7 +186,7 @@ class AES(object):
         0x92158787, 0x20c9e9e9, 0x4987cece, 0xffaa5555, 0x78502828, 0x7aa5dfdf,
         0x8f038c8c, 0xf859a1a1, 0x80098989, 0x171a0d0d, 0xda65bfbf, 0x31d7e6e6,
         0xc6844242, 0xb8d06868, 0xc3824141, 0xb0299999, 0x775a2d2d, 0x111e0f0f,
-        0xcb7bb0b0, 0xfca85454, 0xd66dbbbb, 0x3a2c1616
+        0xcb7bb0b0, 0xfca85454, 0xd66dbbbb, 0x3a2c1616,
     ]
     T3 = [
         0x63a5c663, 0x7c84f87c, 0x7799ee77, 0x7b8df67b, 0xf20dfff2, 0x6bbdd66b,
@@ -230,7 +231,7 @@ class AES(object):
         0x87921587, 0xe920c9e9, 0xce4987ce, 0x55ffaa55, 0x28785028, 0xdf7aa5df,
         0x8c8f038c, 0xa1f859a1, 0x89800989, 0x0d171a0d, 0xbfda65bf, 0xe631d7e6,
         0x42c68442, 0x68b8d068, 0x41c38241, 0x99b02999, 0x2d775a2d, 0x0f111e0f,
-        0xb0cb7bb0, 0x54fca854, 0xbbd66dbb, 0x163a2c16
+        0xb0cb7bb0, 0x54fca854, 0xbbd66dbb, 0x163a2c16,
     ]
     T4 = [
         0x6363a5c6, 0x7c7c84f8, 0x777799ee, 0x7b7b8df6, 0xf2f20dff, 0x6b6bbdd6,
@@ -275,7 +276,7 @@ class AES(object):
         0x87879215, 0xe9e920c9, 0xcece4987, 0x5555ffaa, 0x28287850, 0xdfdf7aa5,
         0x8c8c8f03, 0xa1a1f859, 0x89898009, 0x0d0d171a, 0xbfbfda65, 0xe6e631d7,
         0x4242c684, 0x6868b8d0, 0x4141c382, 0x9999b029, 0x2d2d775a, 0x0f0f111e,
-        0xb0b0cb7b, 0x5454fca8, 0xbbbbd66d, 0x16163a2c
+        0xb0b0cb7b, 0x5454fca8, 0xbbbbd66d, 0x16163a2c,
     ]
 
     # Transformations for decryption
@@ -322,7 +323,7 @@ class AES(object):
         0x1814ce79, 0x73c737bf, 0x53f7cdea, 0x5ffdaa5b, 0xdf3d6f14, 0x7844db86,
         0xcaaff381, 0xb968c43e, 0x3824342c, 0xc2a3405f, 0x161dc372, 0xbce2250c,
         0x283c498b, 0xff0d9541, 0x39a80171, 0x080cb3de, 0xd8b4e49c, 0x6456c190,
-        0x7bcb8461, 0xd532b670, 0x486c5c74, 0xd0b85742
+        0x7bcb8461, 0xd532b670, 0x486c5c74, 0xd0b85742,
     ]
     T6 = [
         0x5051f4a7, 0x537e4165, 0xc31a17a4, 0x963a275e, 0xcb3bab6b, 0xf11f9d45,
@@ -367,7 +368,7 @@ class AES(object):
         0x791814ce, 0xbf73c737, 0xea53f7cd, 0x5b5ffdaa, 0x14df3d6f, 0x867844db,
         0x81caaff3, 0x3eb968c4, 0x2c382434, 0x5fc2a340, 0x72161dc3, 0x0cbce225,
         0x8b283c49, 0x41ff0d95, 0x7139a801, 0xde080cb3, 0x9cd8b4e4, 0x906456c1,
-        0x617bcb84, 0x70d532b6, 0x74486c5c, 0x42d0b857
+        0x617bcb84, 0x70d532b6, 0x74486c5c, 0x42d0b857,
     ]
     T7 = [
         0xa75051f4, 0x65537e41, 0xa4c31a17, 0x5e963a27, 0x6bcb3bab, 0x45f11f9d,
@@ -412,7 +413,7 @@ class AES(object):
         0xce791814, 0x37bf73c7, 0xcdea53f7, 0xaa5b5ffd, 0x6f14df3d, 0xdb867844,
         0xf381caaf, 0xc43eb968, 0x342c3824, 0x405fc2a3, 0xc372161d, 0x250cbce2,
         0x498b283c, 0x9541ff0d, 0x017139a8, 0xb3de080c, 0xe49cd8b4, 0xc1906456,
-        0x84617bcb, 0xb670d532, 0x5c74486c, 0x5742d0b8
+        0x84617bcb, 0xb670d532, 0x5c74486c, 0x5742d0b8,
     ]
     T8 = [
         0xf4a75051, 0x4165537e, 0x17a4c31a, 0x275e963a, 0xab6bcb3b, 0x9d45f11f,
@@ -457,7 +458,7 @@ class AES(object):
         0x14ce7918, 0xc737bf73, 0xf7cdea53, 0xfdaa5b5f, 0x3d6f14df, 0x44db8678,
         0xaff381ca, 0x68c43eb9, 0x24342c38, 0xa3405fc2, 0x1dc37216, 0xe2250cbc,
         0x3c498b28, 0x0d9541ff, 0xa8017139, 0x0cb3de08, 0xb4e49cd8, 0x56c19064,
-        0xcb84617b, 0x32b670d5, 0x6c5c7448, 0xb85742d0
+        0xcb84617b, 0x32b670d5, 0x6c5c7448, 0xb85742d0,
     ]
 
     # Transformations for decryption key expansion
@@ -504,7 +505,7 @@ class AES(object):
         0x5bfb7e34, 0x55f2733f, 0x7fcd500e, 0x71c45d05, 0x63df4a18, 0x6dd64713,
         0xd731dcca, 0xd938d1c1, 0xcb23c6dc, 0xc52acbd7, 0xef15e8e6, 0xe11ce5ed,
         0xf307f2f0, 0xfd0efffb, 0xa779b492, 0xa970b999, 0xbb6bae84, 0xb562a38f,
-        0x9f5d80be, 0x91548db5, 0x834f9aa8, 0x8d4697a3
+        0x9f5d80be, 0x91548db5, 0x834f9aa8, 0x8d4697a3,
     ]
     U2 = [
         0x00000000, 0x0b0e090d, 0x161c121a, 0x1d121b17, 0x2c382434, 0x27362d39,
@@ -549,7 +550,7 @@ class AES(object):
         0x345bfb7e, 0x3f55f273, 0x0e7fcd50, 0x0571c45d, 0x1863df4a, 0x136dd647,
         0xcad731dc, 0xc1d938d1, 0xdccb23c6, 0xd7c52acb, 0xe6ef15e8, 0xede11ce5,
         0xf0f307f2, 0xfbfd0eff, 0x92a779b4, 0x99a970b9, 0x84bb6bae, 0x8fb562a3,
-        0xbe9f5d80, 0xb591548d, 0xa8834f9a, 0xa38d4697
+        0xbe9f5d80, 0xb591548d, 0xa8834f9a, 0xa38d4697,
     ]
     U3 = [
         0x00000000, 0x0d0b0e09, 0x1a161c12, 0x171d121b, 0x342c3824, 0x3927362d,
@@ -594,7 +595,7 @@ class AES(object):
         0x7e345bfb, 0x733f55f2, 0x500e7fcd, 0x5d0571c4, 0x4a1863df, 0x47136dd6,
         0xdccad731, 0xd1c1d938, 0xc6dccb23, 0xcbd7c52a, 0xe8e6ef15, 0xe5ede11c,
         0xf2f0f307, 0xfffbfd0e, 0xb492a779, 0xb999a970, 0xae84bb6b, 0xa38fb562,
-        0x80be9f5d, 0x8db59154, 0x9aa8834f, 0x97a38d46
+        0x80be9f5d, 0x8db59154, 0x9aa8834f, 0x97a38d46,
     ]
     U4 = [
         0x00000000, 0x090d0b0e, 0x121a161c, 0x1b171d12, 0x24342c38, 0x2d392736,
@@ -639,13 +640,13 @@ class AES(object):
         0xfb7e345b, 0xf2733f55, 0xcd500e7f, 0xc45d0571, 0xdf4a1863, 0xd647136d,
         0x31dccad7, 0x38d1c1d9, 0x23c6dccb, 0x2acbd7c5, 0x15e8e6ef, 0x1ce5ede1,
         0x07f2f0f3, 0x0efffbfd, 0x79b492a7, 0x70b999a9, 0x6bae84bb, 0x62a38fb5,
-        0x5d80be9f, 0x548db591, 0x4f9aa883, 0x4697a38d
+        0x5d80be9f, 0x548db591, 0x4f9aa883, 0x4697a38d,
     ]
 
     def __init__(self, key):  # noqa: C901
 
         if len(key) not in (16, 24, 32):
-            raise ValueError('Invalid key size')
+            raise ValueError("Invalid key size")
 
         rounds = self.number_of_rounds[len(key)]
 
@@ -659,10 +660,7 @@ class AES(object):
         KC = len(key) // 4
 
         # Convert the key into ints
-        tk = [
-            struct.unpack('>i', key[i:i + 4])[0]
-            for i in range(0, len(key), 4)
-        ]
+        tk = [struct.unpack(">i", key[i : i + 4])[0] for i in range(0, len(key), 4)]
 
         # Copy values into round key arrays
         for i in range(0, KC):
@@ -677,11 +675,11 @@ class AES(object):
             tt = tk[KC - 1]
             # noqa: W504
             tk[0] ^= (
-                (self.S[(tt >> 16) & 0xFF] << 24) ^
-                (self.S[(tt >> 8) & 0xFF] << 16) ^
-                (self.S[tt & 0xFF] << 8) ^
-                self.S[(tt >> 24) & 0xFF] ^
-                (self.rcon[rconpointer] << 24)
+                (self.S[(tt >> 16) & 0xFF] << 24)
+                ^ (self.S[(tt >> 8) & 0xFF] << 16)
+                ^ (self.S[tt & 0xFF] << 8)
+                ^ self.S[(tt >> 24) & 0xFF]
+                ^ (self.rcon[rconpointer] << 24)
             )
             rconpointer += 1
 
@@ -696,10 +694,10 @@ class AES(object):
                 tt = tk[KC // 2 - 1]
 
                 tk[KC // 2] ^= (
-                    self.S[tt & 0xFF] ^
-                    (self.S[(tt >> 8) & 0xFF] << 8) ^
-                    (self.S[(tt >> 16) & 0xFF] << 16) ^
-                    (self.S[(tt >> 24) & 0xFF] << 24)
+                    self.S[tt & 0xFF]
+                    ^ (self.S[(tt >> 8) & 0xFF] << 8)
+                    ^ (self.S[(tt >> 16) & 0xFF] << 16)
+                    ^ (self.S[(tt >> 24) & 0xFF] << 24)
                 )
 
                 for i in range(KC // 2 + 1, KC):
@@ -718,35 +716,37 @@ class AES(object):
             for j in range(0, 4):
                 tt = self._Kd[r][j]
                 self._Kd[r][j] = (
-                    self.U1[(tt >> 24) & 0xFF] ^
-                    self.U2[(tt >> 16) & 0xFF] ^
-                    self.U3[(tt >> 8) & 0xFF] ^
-                    self.U4[tt & 0xFF]
+                    self.U1[(tt >> 24) & 0xFF]
+                    ^ self.U2[(tt >> 16) & 0xFF]
+                    ^ self.U3[(tt >> 8) & 0xFF]
+                    ^ self.U4[tt & 0xFF]
                 )
 
     def encrypt(self, plaintext):
-        'Encrypt a block of plain text using the AES block cipher.'
+        "Encrypt a block of plain text using the AES block cipher."
 
         if len(plaintext) != 16:
-            raise ValueError('wrong block length')
+            raise ValueError("wrong block length")
 
         rounds = len(self._Ke) - 1
         (s1, s2, s3) = [1, 2, 3]
         a = [0, 0, 0, 0]
 
         # Convert plaintext to (ints ^ key)
-        t = [(_compact_word(plaintext[4 * i:4 * i + 4]) ^ self._Ke[0][i])
-             for i in range(0, 4)]
+        t = [
+            (_compact_word(plaintext[4 * i : 4 * i + 4]) ^ self._Ke[0][i])
+            for i in range(0, 4)
+        ]
 
         # Apply round transforms
         for r in range(1, rounds):
             for i in range(0, 4):
                 a[i] = (
-                    self.T1[(t[i] >> 24) & 0xFF] ^
-                    self.T2[(t[(i + s1) % 4] >> 16) & 0xFF] ^
-                    self.T3[(t[(i + s2) % 4] >> 8) & 0xFF] ^
-                    self.T4[t[(i + s3) % 4] & 0xFF] ^
-                    self._Ke[r][i]
+                    self.T1[(t[i] >> 24) & 0xFF]
+                    ^ self.T2[(t[(i + s1) % 4] >> 16) & 0xFF]
+                    ^ self.T3[(t[(i + s2) % 4] >> 8) & 0xFF]
+                    ^ self.T4[t[(i + s3) % 4] & 0xFF]
+                    ^ self._Ke[r][i]
                 )
             t = copy.copy(a)
 
@@ -762,27 +762,30 @@ class AES(object):
         return result
 
     def decrypt(self, ciphertext):
-        'Decrypt a block of cipher text using the AES block cipher.'
+        "Decrypt a block of cipher text using the AES block cipher."
 
         if len(ciphertext) != 16:
-            raise ValueError('wrong block length')
+            raise ValueError("wrong block length")
 
         rounds = len(self._Kd) - 1
         (s1, s2, s3) = [3, 2, 1]
         a = [0, 0, 0, 0]
 
         # Convert ciphertext to (ints ^ key)
-        t = [(_compact_word(ciphertext[4 * i:4 * i + 4]) ^ self._Kd[0][i])
-             for i in range(0, 4)]
+        t = [
+            (_compact_word(ciphertext[4 * i : 4 * i + 4]) ^ self._Kd[0][i])
+            for i in range(0, 4)
+        ]
 
         # Apply round transforms
         for r in range(1, rounds):
             for i in range(0, 4):
                 a[i] = (
-                    self.T5[(t[i] >> 24) & 0xFF] ^
-                    self.T6[(t[(i + s1) % 4] >> 16) & 0xFF] ^
-                    self.T7[(t[(i + s2) % 4] >> 8) & 0xFF] ^
-                    self.T8[t[(i + s3) % 4] & 0xFF] ^ self._Kd[r][i]
+                    self.T5[(t[i] >> 24) & 0xFF]
+                    ^ self.T6[(t[(i + s1) % 4] >> 16) & 0xFF]
+                    ^ self.T7[(t[(i + s2) % 4] >> 8) & 0xFF]
+                    ^ self.T8[t[(i + s3) % 4] & 0xFF]
+                    ^ self._Kd[r][i]
                 )
             t = copy.copy(a)
 
@@ -799,28 +802,28 @@ class AES(object):
 
 
 class AESBlockModeOfOperation(object):
-    '''Super-class for AES modes of operation that require blocks.'''
+    """Super-class for AES modes of operation that require blocks."""
 
     def __init__(self, key):
         self._aes = AES(key)
 
     def decrypt(self, ciphertext):
-        raise Exception('not implemented')
+        raise Exception("not implemented")
 
     def encrypt(self, plaintext):
-        raise Exception('not implemented')
+        raise Exception("not implemented")
 
 
 class AESModeOfOperationECB(AESBlockModeOfOperation):
-    '''AES Electronic Codebook Mode of Operation.
-       o Block-cipher, so data must be padded to 16 byte boundaries
-   Security Notes:
-       o This mode is not recommended
-       o Any two identical blocks produce identical encrypted values,
-         exposing data patterns. (See the image of Tux on wikipedia)
-   Also see:
-       o https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_codebook_.28ECB.29
-       o See NIST SP800-38A (http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf); section 6.1'''
+    """AES Electronic Codebook Mode of Operation.
+        o Block-cipher, so data must be padded to 16 byte boundaries
+    Security Notes:
+        o This mode is not recommended
+        o Any two identical blocks produce identical encrypted values,
+          exposing data patterns. (See the image of Tux on wikipedia)
+    Also see:
+        o https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Electronic_codebook_.28ECB.29
+        o See NIST SP800-38A (http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf); section 6.1"""
 
     name = "Electronic Codebook (ECB)"
 
@@ -829,14 +832,14 @@ class AESModeOfOperationECB(AESBlockModeOfOperation):
 
     def encrypt(self, data: bytes) -> bytes:
         if len(data) != 16:
-            raise ValueError('plain block must be 16 bytes')
+            raise ValueError("plain block must be 16 bytes")
 
         plain = _bytes_to_int(data)
         return _int_to_bytes(self._aes.encrypt(plain))
 
     def decrypt(self, data: bytes) -> bytes:
         if len(data) != 16:
-            raise ValueError('cipher block must be 16 bytes')
+            raise ValueError("cipher block must be 16 bytes")
 
         cipher = _bytes_to_int(data)
         return _int_to_bytes(self._aes.decrypt(cipher))
@@ -845,15 +848,15 @@ class AESModeOfOperationECB(AESBlockModeOfOperation):
 def aes_encrypt(data: bytes, key: str) -> bytes:
     data = add_padding(data)
     cipher = list()
-    for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
+    for x in [data[i : i + 16] for i in range(0, len(data), 16)]:
         cipher.append(AESModeOfOperationECB(key).encrypt(x))
-    return b''.join(cipher)
+    return b"".join(cipher)
 
 
 def aes_decrypt(data: bytes, key: str) -> bytes:
     plain = list()
     if len(data) % 16 != 0:
-        raise Exception('invalid length')
-    for x in [data[i:i + 16] for i in range(0, len(data), 16)]:
+        raise Exception("invalid length")
+    for x in [data[i : i + 16] for i in range(0, len(data), 16)]:
         plain.append(AESModeOfOperationECB(key).decrypt(x))
-    return strip_padding(b''.join(plain))
+    return strip_padding(b"".join(plain))

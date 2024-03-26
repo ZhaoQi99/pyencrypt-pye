@@ -10,4 +10,4 @@ def generate_aes_key(size: int = 32) -> bytes:
 
 def generate_rsa_number(bits: int) -> dict:
     r = RSA.generate(bits)
-    return {'p': r.p, 'q': r.q, 'n': r.n, 'e': r.e, 'd': r.d}
+    return {"p": r.p, "q": r.q, "n": r.n, "e": r.e, "d": r.d}
