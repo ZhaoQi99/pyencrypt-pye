@@ -30,8 +30,8 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
     def __init__(self, path) -> None:
         self.path = path or ""
-        self.__private_key = ""
-        self.__cipher_key = ""
+        self.__private_key = None
+        self.__cipher_key = None
         self.license = None
         self.license_path = None
         self._init_license_path()
