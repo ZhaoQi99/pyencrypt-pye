@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 from pathlib import Path
 from typing import Optional
@@ -97,8 +98,18 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
         script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
         cmdclass={'build_ext': build_ext},
     )
-    print(list(temp_dir.iterdir()))
-    return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
+    if sys.platform.startswith('win'):
+        # loader.cp36-win_amd64.pyd
+        pattern = 'loader.cp*-*.pyd'
+    else:
+        # loader.cpython-36m-x86_64-linux-gnu.so
+        # loader.cpython-36m-darwin.so
+        pattern = "loader.cpython-*-*.so"
+
+    loader_extension = next(temp_dir.glob(pattern), None)
+    if loader_extension is None:
+        raise Exception(f"Can't find loader extension in {temp_dir.as_posix()}")
+    return loader_extension.absolute()
 
 
 def encrypt_file(path: Path, key: str, delete_origin: bool = False, new_path: Optional[Path] = None):

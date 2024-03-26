@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import shutil
+import sys
 
 import pytest
 from pyencrypt.encrypt import can_encrypt, encrypt_file, encrypt_key, generate_so_file
@@ -47,7 +48,10 @@ class TestGenarateSoFile:
         assert generate_so_file(cipher_key, d, n, tmp_path)
         assert (tmp_path / 'encrypted' / 'loader.py').exists() is True
         assert (tmp_path / 'encrypted' / 'loader_origin.py').exists() is True
-        assert list((tmp_path / 'encrypted').glob('loader.cpython-*-*.so')) != []
+        if sys.platform.startswith('win'):
+            assert next((tmp_path / 'encrypted').glob('loader.cp*-*.pyd'), None) is not None
+        else:
+            assert next((tmp_path / 'encrypted').glob('loader.cpython-*-*.so'), None) is not None
 
     @pytest.mark.parametrize('key', [
         AES_KEY,
@@ -58,7 +62,10 @@ class TestGenarateSoFile:
         assert generate_so_file(cipher_key, d, n)
         assert (Path(os.getcwd()) / 'encrypted' / 'loader.py').exists() is True
         assert (Path(os.getcwd()) / 'encrypted' / 'loader_origin.py').exists() is True
-        assert list((Path(os.getcwd()) / 'encrypted').glob('loader.cpython-*-*.so')) != []
+        if sys.platform.startswith('win'):
+            assert next((Path(os.getcwd()) / 'encrypted').glob('loader.cp*-*.pyd'), None) is not None
+        else:
+            assert next((Path(os.getcwd()) / 'encrypted').glob('loader.cpython-*-*.so'), None) is not None
 
 
 @pytest.mark.parametrize(
