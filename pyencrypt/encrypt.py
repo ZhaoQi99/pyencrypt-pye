@@ -97,6 +97,7 @@ def generate_so_file(cipher_key: str, d: int, n: int, base_dir: Optional[Path] =
         script_args=['build_ext', '--build-lib', temp_dir.as_posix()],
         cmdclass={'build_ext': build_ext},
     )
+    print(list(temp_dir.iterdir()))
     return list(temp_dir.glob('loader.cpython-*-*.so'))[0].absolute()
 
 
