@@ -140,6 +140,35 @@ Options:
                                   License is invalid after this date.
 ```
 
+### Shell Completion
+
+<details open>
+<summary>Bash</summary>
+Add this to ~/.bashrc:
+
+```shell
+eval "$(_PYENCRYPT_COMPLETE=bash_source pyencrypt)"
+```
+</details>
+
+<details>
+<summary>Zsh</summary>
+Add this to ~/.zshrc:
+
+```shell
+eval "$(_PYENCRYPT_COMPLETE=zsh_source pyencrypt)"
+```
+</details>
+
+<details>
+<summary>Fish</summary>
+Add this to ~/.config/fish/completions/foo-bar.fish:
+
+```shell
+eval (env _PYENCRYPT_COMPLETE=fish_source pyencrypt)
+```
+</details>
+
 ## Example
 
 ### Encrypt
