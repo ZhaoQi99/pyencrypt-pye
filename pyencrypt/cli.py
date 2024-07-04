@@ -299,10 +299,20 @@ def generate_loader(ctx, key):
     "-k", "--key", required=True, help="Your encryption key.", type=CustomParamType.KEY
 )
 @click.option(
-    "-m", "--bind-mac", help="Your mac address.", type=CustomParamType.MAC_ADDR
+    "-m",
+    "--bind-mac",
+    "mac",
+    default=None,
+    help="Your mac address.",
+    type=CustomParamType.MAC_ADDR,
 )
 @click.option(
-    "-4", "--bind-ipv4", help="Your ipv4 address.", type=CustomParamType.IPV4_ADDR
+    "-4",
+    "--bind-ipv4",
+    "ipv4",
+    default=None,
+    help="Your ipv4 address.",
+    type=CustomParamType.IPV4_ADDR,
 )
 @click.option(
     "-b",
