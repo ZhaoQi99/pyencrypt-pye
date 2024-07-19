@@ -130,7 +130,7 @@ class CustomParamType:
 
 
 @click.group()
-@click.version_option(__version__, "--version", message=VERSION)
+@click.version_option(__version__, "-V", "--version", message=VERSION)
 @click.help_option("-h", "--help")
 def cli():
     pass
