@@ -1,10 +1,16 @@
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 from typing import Optional
 
-import python_minifier
+try:
+    import python_minifier
+except ImportError as exc:
+    if sys.version_info.minor < 12:
+        raise ImportError("Couldn't import python_minifier.") from exc
+
+    python_minifier = None
 
 from pyencrypt.aes import aes_encrypt
 from pyencrypt.generate import generate_rsa_number
@@ -93,10 +99,12 @@ def generate_so_file(
         f"{decrypt_source}\n{loader_source}", encoding="utf-8"
     )
 
-    loader_file_path.write_text(
-        python_minifier.minify(loader_origin_file_path.read_text(encoding="utf-8")),
-        encoding="utf-8",
-    )
+    minified_code = loader_origin_file_path.read_text(encoding="utf-8")
+
+    if python_minifier:
+        minified_code = python_minifier.minify(minified_code)
+
+    loader_file_path.write_text(minified_code, encoding="utf-8")
 
     from setuptools import setup  # isort:skip
     from Cython.Build import cythonize
