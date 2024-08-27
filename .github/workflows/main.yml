@@ -31,7 +31,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install setuptools -U
         pip install .[dev]
 
     - name: Lint with flake8
