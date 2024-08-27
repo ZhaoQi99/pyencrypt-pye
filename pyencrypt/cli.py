@@ -197,7 +197,7 @@ def encrypt_command(
     if key is None:
         key = generate_aes_key().decode()
         click.echo(
-            f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}'
+            f'Your randomly encryption 🔑 is {click.style(key, underline=True, fg="yellow")}'
         )
 
     if before > after:
