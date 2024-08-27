@@ -31,9 +31,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install setuptools==57.5.0
-        pip install -r dev-requirement.txt
-        pip install .
+        pip install setuptools -U
+        pip install .[dev]
 
     - name: Lint with flake8
       run: |

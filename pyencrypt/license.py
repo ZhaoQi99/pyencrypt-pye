@@ -35,7 +35,7 @@ FIELDS = ["invalid_before", "invalid_after", "ipv4", "mac"]
 
 
 def _combine_data(data: dict) -> bytes:
-    return "*".join(map(lambda x: f"{x}:{data[x]}", FIELDS)).encode()
+    return "*".join(map(lambda x: f"{x}:{data[x]}", FIELDS)).encode()  # noqa: E231
 
 
 def generate_license_file(
