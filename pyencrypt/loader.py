@@ -78,9 +78,9 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
     ) -> ModuleSpec:
         if path:
             if isinstance(path, _NamespacePath):
-                file_path = Path(path._path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
+                file_path = Path(path._path[0]) / f'{fullname.rsplit(".", 1)[-1]}.pye'
             else:
-                file_path = Path(path[0]) / f'{fullname.rsplit(".",1)[-1]}.pye'
+                file_path = Path(path[0]) / f'{fullname.rsplit(".", 1)[-1]}.pye'
         else:
             for p in sys.path:
                 file_path = Path(p) / f"{fullname}.pye"

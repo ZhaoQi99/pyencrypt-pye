@@ -1,4 +1,0 @@
-click==8.0.3
-Cython==0.29.24
-pycryptodome==3.14.1
-python-minifier==2.9.0

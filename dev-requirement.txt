@@ -1,6 +1,0 @@
--r requirement.txt
-isort==5.10.1
-black==22.8.0
-pytest==6.2.5
-ipython==7.16.3
-flake8==4.0.1

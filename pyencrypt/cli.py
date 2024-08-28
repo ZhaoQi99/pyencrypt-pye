@@ -25,7 +25,7 @@ VERSION = rf"""
         {__description__}
 
                     VERSION {__version__}
-"""
+"""  # noqa: E221,E222
 
 KEY_OPTION_HELP = """
 Your encryption key.If you don't specify key,
@@ -52,8 +52,8 @@ FINISH_ENCRYPT_MSG = f"""
 Encryption completed {SUCCESS_ANSI}.
 Please copy {LOADER_FILE_NAME} into your encrypted directory.
 And then remove `encrypted` directory.
-Finally, add `import loader` at the top of your entry file.\
-"""
+Finally, add `import loader` at the top of your entry file.\n
+"""  # noqa: W604
 
 FINISH_DECRYPT_MSG = f"""
 Decryption completed {SUCCESS_ANSI}. Your origin source code has be put: {{work_dir}}
@@ -197,7 +197,7 @@ def encrypt_command(
     if key is None:
         key = generate_aes_key().decode()
         click.echo(
-            f'Your randomly encryption 🔑 is {click.style(key,underline=True, fg="yellow")}'
+            f'Your randomly encryption 🔑 is {click.style(key, underline=True, fg="yellow")}'
         )
 
     if before > after:
