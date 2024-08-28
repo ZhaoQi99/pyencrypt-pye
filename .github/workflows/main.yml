@@ -31,14 +31,15 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
+        pip install setuptools
         pip install .[dev]
 
     - name: Lint with flake8
       run: |
         # Run flake8 on Python files
-        flake8 pyencrypt --count --show-source --max-complexity=10 --statistics
+        pflake8 pyencrypt --count --show-source --max-complexity=10 --statistics
         # Run flake8 on test files
-        flake8 tests --count --show-source --max-complexity=10 --statistics --ignore F401,W503
+        pflake8 tests --count --show-source --max-complexity=10 --statistics --ignore F401,W503
 
     - name: Test with pytest
       run: |

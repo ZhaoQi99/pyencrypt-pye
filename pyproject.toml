@@ -54,6 +54,7 @@ dev = [
     "pytest",
     "ipython",
     "flake8",
+    "pyproject-flake8",
 ]
 
 [project.scripts]
