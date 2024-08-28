@@ -5,3 +5,83 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyencrypt-pye"
+authors = [{name = "Qi Zhao", email = "zhaoqi99@outlook.com"}]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Environment :: Console",
+]
+description = "Encrypt python source code and import module dynamically."
+keywords = ["python-encrypt", "import-hook"]
+requires-python = ">=3.6,<3.13"
+dependencies = [
+    "Cython >= 0.29.30",
+    "pycryptodome >= 3.14.1",
+    "python-minifier >= 2.6.0; python_version < '3.12'",
+    "click",
+    "setuptools >= 66.1.0; python_version >= '3.12'",
+    "setuptools <= 60.9.0; python_version < '3.12'",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/ZhaoQi99/pyencrypt-pye"
+Changelog = "https://github.com/ZhaoQi99/pyencrypt-pye/releases"
+Source = "https://github.com/ZhaoQi99/pyencrypt-pye"
+"Issue Tracker" = "https://github.com/ZhaoQi99/pyencrypt-pye/issues"
+# "Documentation" = "https://github.com/ZhaoQi99/pyencrypt-pye"
+# "Trove classifiers" for PyPI (https://pypi.org/classifiers/).
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.optional-dependencies]
+dev = [
+    "isort",
+    "black",
+    "pytest",
+    "ipython",
+    "flake8",
+]
+
+[project.scripts]
+pyencrypt = "pyencrypt.cli:cli"
+
+[tool.setuptools]
+# package_dir =
+# = src
+license-files = ["LICENSE"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+# where = src
+exclude = [
+    "tests",
+    "*.tests.*",
+]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = {attr = "pyencrypt.__version__"}
+
+[tool.black]
+line-length = "88"
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = "88"
+extend-ignore = "E203,E701,E501"
