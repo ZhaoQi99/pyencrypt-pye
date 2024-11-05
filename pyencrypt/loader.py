@@ -73,8 +73,9 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
 
 class EncryptFileFinder(abc.MetaPathFinder, Base):
+    @classmethod
     def find_spec(
-        self, fullname: str, path: Sequence[_Path], target: types.ModuleType = None
+        cls, fullname: str, path: Sequence[_Path], target: types.ModuleType = None
     ) -> ModuleSpec:
         if path:
             if isinstance(path, _NamespacePath):
@@ -92,6 +93,10 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
         loader = EncryptFileLoader(file_path)
         return spec_from_loader(name=fullname, loader=loader, origin="origin-encrypt")
 
+    @classmethod
+    def invalidate_caches(cls):
+        pass
+
 
 # TODO: generate randomly AES Class
-sys.meta_path.insert(0, EncryptFileFinder())
+sys.meta_path.insert(0, EncryptFileFinder)

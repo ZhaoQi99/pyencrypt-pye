@@ -33,8 +33,6 @@ def _encrypt_file(
 def can_encrypt(path: Path) -> bool:
     if path.name in NOT_ALLOWED_ENCRYPT_FILES:
         return False
-    if "management/commands/" in path.as_posix():
-        return False
     if path.suffix != ".py":
         return False
     return True

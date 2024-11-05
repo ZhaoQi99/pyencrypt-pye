@@ -29,7 +29,6 @@ def test_encrypt_key(key):
     [
         (Path("__init__.py"), False),
         (Path("pyencrypt/__init__.py"), False),
-        (Path("management/commands/user.py"), False),
         (Path("tests/test.pye"), False),
         (Path("tests/test_encrypt.py"), True),
     ],
