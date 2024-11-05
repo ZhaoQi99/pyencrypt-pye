@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 import types
-from importlib import abc
+from importlib import abc, machinery
 from importlib._bootstrap_external import _NamespacePath
 from importlib.machinery import ModuleSpec
 from importlib.util import spec_from_loader
@@ -19,6 +19,9 @@ sys.dont_write_bytecode = True
 class Base:
     def __dir__(self) -> Iterable[str]:
         return []
+
+
+ENCRYPT_SUFFIX = ".pye"
 
 
 class EncryptFileLoader(abc.SourceLoader, Base):
@@ -79,12 +82,17 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
     ) -> ModuleSpec:
         if path:
             if isinstance(path, _NamespacePath):
-                file_path = Path(path._path[0]) / f'{fullname.rsplit(".", 1)[-1]}.pye'
+                file_path = (
+                    Path(path._path[0])
+                    / f'{fullname.rsplit(".", 1)[-1]}{ENCRYPT_SUFFIX}'
+                )
             else:
-                file_path = Path(path[0]) / f'{fullname.rsplit(".", 1)[-1]}.pye'
+                file_path = (
+                    Path(path[0]) / f'{fullname.rsplit(".", 1)[-1]}{ENCRYPT_SUFFIX}'
+                )
         else:
             for p in sys.path:
-                file_path = Path(p) / f"{fullname}.pye"
+                file_path = Path(p) / f"{fullname}{ENCRYPT_SUFFIX}"
                 if file_path.exists():
                     break
         file_path = file_path.absolute().as_posix()
@@ -99,4 +107,5 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
 
 
 # TODO: generate randomly AES Class
+machinery.EXTENSION_SUFFIXES.append(ENCRYPT_SUFFIX)
 sys.meta_path.insert(0, EncryptFileFinder)
