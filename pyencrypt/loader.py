@@ -107,5 +107,9 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
 
 
 # TODO: generate randomly AES Class
-machinery.EXTENSION_SUFFIXES.append(ENCRYPT_SUFFIX)
-sys.meta_path.insert(0, EncryptFileFinder)
+def _install():
+    machinery.EXTENSION_SUFFIXES.append(ENCRYPT_SUFFIX)
+    sys.meta_path.insert(0, EncryptFileFinder)
+
+
+_install()
