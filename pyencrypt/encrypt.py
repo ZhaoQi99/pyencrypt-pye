@@ -7,7 +7,7 @@ from typing import Optional
 try:
     import python_minifier
 except ImportError as exc:
-    if sys.version_info.minor < 12:
+    if sys.version_info.minor < 14:
         raise ImportError("Couldn't import python_minifier.") from exc
 
     python_minifier = None
