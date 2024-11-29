@@ -91,15 +91,11 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
         cls, fullname: str, path: Sequence[_Path], target: types.ModuleType = None
     ) -> ModuleSpec:
         if path:
+            filename = "{}{}".format(fullname.rsplit(".", 1)[-1], ENCRYPT_SUFFIX)
             if isinstance(path, _NamespacePath):
-                file_path = (
-                    Path(path._path[0])
-                    / f'{fullname.rsplit(".", 1)[-1]}{ENCRYPT_SUFFIX}'
-                )
+                file_path = Path(path._path[0]) / filename
             else:
-                file_path = (
-                    Path(path[0]) / f'{fullname.rsplit(".", 1)[-1]}{ENCRYPT_SUFFIX}'
-                )
+                file_path = Path(path[0]) / filename
         else:
             for p in sys.path:
                 file_path = Path(p) / f"{fullname}{ENCRYPT_SUFFIX}"
