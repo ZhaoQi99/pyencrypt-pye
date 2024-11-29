@@ -1,12 +1,10 @@
 import os
-from functools import lru_cache
 from pathlib import Path
 
 from pyencrypt.aes import aes_decrypt
 from pyencrypt.ntt import intt
 
 
-@lru_cache(maxsize=128)
 def decrypt_key(cipher_key: str, d: int, n: int) -> str:
     plain_ls = list()
     for num in map(int, cipher_key.split("O")):

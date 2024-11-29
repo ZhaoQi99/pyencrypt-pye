@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 import types
+from functools import lru_cache
 from importlib import abc, machinery
 from importlib._bootstrap_external import _NamespacePath
 from importlib.machinery import ModuleSpec
@@ -49,6 +50,11 @@ class EncryptFileLoader(abc.SourceLoader, Base):
                 self.license_path = path
                 break
 
+    @classmethod
+    @lru_cache(maxsize=128)
+    def _decrypt_key(cls, cipher_key: str, d: int, n: int):
+        return decrypt_key(cipher_key, d, n)
+
     def check(self) -> bool:
         if self.license is False:
             return False
@@ -58,7 +64,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
         __n, __d = self.__private_key.split("O", 1)
         check_license(
-            self.license_path, decrypt_key(self.__cipher_key, int(__d), int(__n))
+            self.license_path, self._decrypt_key(self.__cipher_key, int(__d), int(__n))
         )
         return True
 
@@ -72,7 +78,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
         try:
             __n, __d = self.__private_key.split("O", 1)
             return decrypt_file(
-                Path(path), decrypt_key(self.__cipher_key, int(__d), int(__n))
+                Path(path), self._decrypt_key(self.__cipher_key, int(__d), int(__n))
             )
         except Exception:
             traceback.print_exc()
