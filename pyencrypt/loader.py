@@ -1,3 +1,4 @@
+import linecache
 import os
 import sys
 import traceback
@@ -64,6 +65,9 @@ class EncryptFileLoader(abc.SourceLoader, Base):
     def get_filename(self, fullname: str) -> str:
         return self.path
 
+    def get_source(self, fullname: str):
+        return None
+
     def get_data(self, path: _Path) -> bytes:
         try:
             __n, __d = self.__private_key.split("O", 1)
@@ -76,6 +80,12 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
 
 class EncryptFileFinder(abc.MetaPathFinder, Base):
+    @staticmethod
+    def _cache_line(file_path):
+        stat = os.stat(file_path)
+        size, mtime = stat.st_size, stat.st_mtime
+        linecache.cache[file_path] = (size, mtime, [], file_path)
+
     @classmethod
     def find_spec(
         cls, fullname: str, path: Sequence[_Path], target: types.ModuleType = None
@@ -98,6 +108,9 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
         file_path = file_path.absolute().as_posix()
         if not os.path.exists(file_path):
             return None
+
+        cls._cache_line(file_path)
+
         loader = EncryptFileLoader(file_path)
         return spec_from_loader(name=fullname, loader=loader, origin="origin-encrypt")
 

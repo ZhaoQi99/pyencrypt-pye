@@ -1,4 +1,5 @@
 import pytest
+
 from pyencrypt.encrypt import encrypt_file, encrypt_key, generate_so_file
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import generate_license_file
@@ -47,7 +48,7 @@ def {function_name}():
     # generate loader.so
     key = generate_aes_key()
     new_path = file_path.with_suffix(".pye")
-    encrypt_file(file_path, key, new_path=new_path)
+    encrypt_file(file_path, key.decode(), new_path=new_path)
     file_path.unlink()
     cipher_key, d, n = encrypt_key(key)
     loader_path = generate_so_file(cipher_key, d, n, file_path.parent, license=license)
@@ -58,7 +59,6 @@ def {function_name}():
 
     # License
     license and generate_license_file(key.decode(), work_dir, **kwargs)
-    generate_license_file(key.decode(), work_dir)
     return (new_path, loader_path)
 
 
