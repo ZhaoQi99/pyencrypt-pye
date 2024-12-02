@@ -37,7 +37,7 @@ def test_can_encrypt(path, expected):
     assert can_encrypt(path) == expected
 
 
-class TestGenarateSoFile:
+class TestGenerateSoFile:
     def setup_method(self, method):
         if method.__name__ == "test_generate_so_file_default_path":
             shutil.rmtree(
