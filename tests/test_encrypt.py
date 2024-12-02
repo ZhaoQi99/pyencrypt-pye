@@ -53,7 +53,7 @@ class TestGenarateSoFile:
     )
     def test_generate_so_file(self, key, tmp_path):
         cipher_key, d, n = encrypt_key(key)
-        assert generate_so_file(cipher_key, d, n, tmp_path)
+        assert generate_so_file(cipher_key, d, n, tmp_path).exists()
         assert (tmp_path / "encrypted" / "loader.py").exists() is True
         assert (tmp_path / "encrypted" / "loader_origin.py").exists() is True
         if sys.platform.startswith("win"):
@@ -76,7 +76,7 @@ class TestGenarateSoFile:
     )
     def test_generate_so_file_default_path(self, key):
         cipher_key, d, n = encrypt_key(key)
-        assert generate_so_file(cipher_key, d, n)
+        assert generate_so_file(cipher_key, d, n).exists()
         assert (Path(os.getcwd()) / "encrypted" / "loader.py").exists() is True
         assert (Path(os.getcwd()) / "encrypted" / "loader_origin.py").exists() is True
         if sys.platform.startswith("win"):
