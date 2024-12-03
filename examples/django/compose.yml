@@ -1,0 +1,11 @@
+services:
+  demo1:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - 8001:8000
+  demo2:
+    build: .
+    command: gunicorn -c demo/gunicorn.py demo.wsgi
+    ports:
+      - 8002:8000
