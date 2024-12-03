@@ -34,6 +34,10 @@ pip install pyencrypt-pye
 ✨🍰✨
 ```
 Or you can use `pip install git+https://github.com/ZhaoQi99/pyencrypt-pye.git` install latest version.
+
+## Examples
+View examples in the [examples](./examples) directory.
+
 ## Usage
 
 ```shell
