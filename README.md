@@ -204,6 +204,9 @@ eval (env _PYENCRYPT_COMPLETE=fish_source pyencrypt)
     --before="2000-01-01T00:00:00 +0800" --after="2030-01-01T00:00:00 +0800"\
     --bind-mac="AC:DE:48:00:11:22" --bind-ipv4="192.168.0.1"
 ```
+## FAQ
+
+See [FAQ](FAQ.md) for frequently asked questions.
 
 ## Development
 
