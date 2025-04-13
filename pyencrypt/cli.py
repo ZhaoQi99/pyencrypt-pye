@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import click
+from click.core import ParameterSource  # click>=8
 
 from pyencrypt import __description__, __version__
 from pyencrypt.decrypt import decrypt_file
@@ -69,6 +70,8 @@ Generate license file {SUCCESS_ANSI}. Your license file is located in {LICENSE_F
 
 DATETIME_FORMATS = ["%Y-%m-%dT%H:%M:%S %z", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
 
+ENVVAR_PREFIX = "PYE_ENCRYPT"
+
 
 class KeyParamType(click.ParamType):
     name = "key"
@@ -77,6 +80,17 @@ class KeyParamType(click.ParamType):
         return not (len(key) % 4 or len(base64.b64decode(key)) % 16)
 
     def convert(self, value, param, ctx) -> str:
+        if ctx.get_parameter_source(param.name) == ParameterSource.ENVIRONMENT:
+            visible_chars = 4
+            masked = (
+                value[:visible_chars]
+                + "*" * (len(value) - 2 * visible_chars)
+                + value[-visible_chars:]
+            )
+            click.echo(
+                f'Using encryption key 🔑 {click.style(masked, fg="yellow")} from environment variable {click.style(param.envvar, fg="bright_cyan")}.'
+            )
+
         value = click.STRING.convert(value, param, ctx)
         if not self._check_key(value):
             self.fail(INVALID_KEY_MSG, param, ctx)
@@ -147,7 +161,13 @@ def cli():
     is_flag=True,
 )
 @click.option(
-    "-k", "--key", default=None, help=KEY_OPTION_HELP, type=CustomParamType.KEY
+    "-k",
+    "--key",
+    default=None,
+    help=KEY_OPTION_HELP,
+    type=CustomParamType.KEY,
+    envvar=f"{ENVVAR_PREFIX}_KEY",
+    show_envvar=True,
 )
 @click.option(
     "--with-license", default=False, help="Add license to encrypted file", is_flag=True

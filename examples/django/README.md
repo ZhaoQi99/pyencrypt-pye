@@ -7,6 +7,13 @@ This example shows how to use `pyencrypt` with Django.
 docker compose up -d
 ```
 
+## Build image
+```shell
+docker build -f Dockerfile -t demo:v1.0 .
+docker build -f Dockerfile -t demo:v1.0 --build-arg ENCRYPT_KEY=YOUR_FIXED_KEY .
+docker save demo:v1.0| gzip > demo:v1.0_v1.0.tar.gz
+```
+
 ## Test
 * runserver: `curl http://127.0.0.1:8001/account/login/?username=admin&password=admin`
 * gunicorn: `curl http://127.0.0.1:8002/account/login/?username=admin&password=admin`

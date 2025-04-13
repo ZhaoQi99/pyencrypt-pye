@@ -20,7 +20,10 @@ COPY . /root/demo/
 RUN python manage.py collectstatic --noinput
 
 # --- Encryption ---
-RUN pip install git+https://github.com/ZhaoQi99/pyencrypt-pye.git
+ARG ENCRYPT_KEY
+ENV PYE_ENCRYPT_KEY=$ENCRYPT_KEY
+
+RUN pip install pyencrypt-pye
 RUN pyencrypt encrypt --in-place --yes .
 RUN cp encrypted/loader*.so .
 RUN rm -rf encrypted build/
