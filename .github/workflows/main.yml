@@ -19,8 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-13, windows-latest]
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12","3.13"]
+        os: [ubuntu-22.04, macos-13, windows-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12","3.13"]
         exclude:
           - os: windows-latest
             python-version: "3.13"
