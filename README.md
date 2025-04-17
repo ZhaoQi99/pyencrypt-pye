@@ -67,6 +67,7 @@ Options:
   -k, --key 🔑                     Your encryption key.If you don‘t specify
                                   key, pyencrypt will generate encryption key
                                   randomly.  [env var: PYE_ENCRYPT_KEY]
+  --without-loader                Don't generate loader file
   --with-license                  Add license to encrypted file
   -m, --bind-mac 01:23:45:67:89:AB
                                   Bind mac address to encrypted file

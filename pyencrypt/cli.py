@@ -51,9 +51,13 @@ INVALID_DATETIME_MSG = click.style(
 
 FINISH_ENCRYPT_MSG = f"""
 Encryption completed {SUCCESS_ANSI}.
+"""
+
+FINISH_ENCRYPT_WITH_LOADER_MSG = f"""
+{FINISH_ENCRYPT_MSG}
 Please copy {LOADER_FILE_NAME} into your encrypted directory.
 And then remove `encrypted` directory.
-Finally, add `import loader` at the top of your entry file.\n
+Finally, add `import loader` at the top of your entry file.
 """  # noqa: W604
 
 FINISH_DECRYPT_MSG = f"""
@@ -170,6 +174,12 @@ def cli():
     show_envvar=True,
 )
 @click.option(
+    "--without-loader",
+    default=False,
+    help="Don't generate loader file",
+    is_flag=True,
+)
+@click.option(
     "--with-license", default=False, help="Add license to encrypted file", is_flag=True
 )
 @click.option(
@@ -211,7 +221,7 @@ def cli():
 @click.help_option("-h", "--help")
 @click.pass_context
 def encrypt_command(
-    ctx, pathname, replace, key, with_license, mac, ipv4, before, after
+    ctx, pathname, replace, key, without_loader, with_license, mac, ipv4, before, after
 ):
     """Encrypt your python code"""
     if key is None:
@@ -247,12 +257,17 @@ def encrypt_command(
     else:
         raise Exception(f"{path} is not a valid path.")
 
-    cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
-    loader_extension = generate_so_file(cipher_key, d, n, license=with_license)
     if with_license is True:
         generate_license_file(key, Path(os.getcwd()), after, before, mac, ipv4)
         click.echo(FINISH_GENERATE_LICENSE_MSG)
-    click.echo(FINISH_ENCRYPT_MSG.format(loader_extension.name))
+
+    if without_loader is True:
+        click.echo(FINISH_ENCRYPT_MSG)
+        return
+
+    cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
+    loader_extension = generate_so_file(cipher_key, d, n, license=with_license)
+    click.echo(FINISH_ENCRYPT_WITH_LOADER_MSG.format(loader_extension.name))
 
 
 @cli.command(name="decrypt")
