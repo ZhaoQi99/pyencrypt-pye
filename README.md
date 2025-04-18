@@ -5,7 +5,6 @@
 [![Python version](https://img.shields.io/pypi/pyversions/pyencrypt-pye.svg?logo=python)](https://pypi.python.org/pypi/pyencrypt-pye)
 [![PyPI package](https://img.shields.io/pypi/v/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye) 
 [![PyPI download](https://img.shields.io/pypi/dm/pyencrypt-pye.svg)](https://pypi.python.org/pypi/pyencrypt-pye)
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FZhaoQi99%2Fpyencrypt-pye&count_bg=%2379C83D&title_bg=%23555555&icon=github.svg&icon_color=%23E7E7E7&title=visitors&edge_flat=false)](https://hits.seeyoufarm.com)
 [![GitHub](https://img.shields.io/github/license/ZhaoQi99/pyencrypt-pye)](https://github.com/ZhaoQi99/pyencrypt-pye/blob/main/LICENSE) 
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/ZhaoQi99/pyencrypt-pye) 
 
