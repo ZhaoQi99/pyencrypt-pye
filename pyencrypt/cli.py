@@ -100,7 +100,7 @@ class KeyParamType(click.ParamType):
             self.fail(INVALID_KEY_MSG, param, ctx)
         return value
 
-    def get_metavar(self, param):
+    def get_metavar(self, param: click.Parameter, ctx: click.Context | None = None):
         return "🔑"
 
     def __repr__(self) -> str:
@@ -117,7 +117,7 @@ class MacAddressParamType(click.ParamType):
             self.fail(INVALID_MAC_MSG.format(value), param, ctx)
         return value
 
-    def get_metavar(self, param):
+    def get_metavar(self, param: click.Parameter, ctx: click.Context | None = None):
         return "01:23:45:67:89:AB"
 
     def __repr__(self) -> str:
@@ -134,7 +134,7 @@ class IPv4AddressParamType(click.ParamType):
         except ValueError:
             self.fail(INVALID_IPV4_MSG.format(value), param, ctx)
 
-    def get_metavar(self, param):
+    def get_metavar(self, param: click.Parameter, ctx: click.Context | None = None):
         return "192.168.0.1"
 
     def __repr__(self) -> str:
