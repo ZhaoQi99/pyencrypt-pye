@@ -15,8 +15,8 @@ docker save demo:v1.0| gzip > demo:v1.0_v1.0.tar.gz
 ```
 
 ## Test
-* runserver: `curl http://127.0.0.1:8001/account/login/?username=admin&password=admin`
-* gunicorn: `curl http://127.0.0.1:8002/account/login/?username=admin&password=admin`
+* runserver: `curl http://127.0.0.1:8001/account/login/\?username\=admin\&password\=admin`
+* gunicorn: `curl http://127.0.0.1:8002/account/login/\?username\=admin\&password\=admin`
 
 ## Note
 * `manage.py` shouldn't be encrypted.

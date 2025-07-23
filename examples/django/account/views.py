@@ -10,8 +10,8 @@ class LoginView(View):
             import loader
 
             file_loader = loader.EncryptFileLoader("")
-            if file_loader.license is True and file_loader.check() is False:
-                return JsonResponse({"message": "License is not valid"}, status=403)
+            if file_loader.license is True:
+                file_loader.check()
         except ModuleNotFoundError:
             pass
         except Exception as e:
