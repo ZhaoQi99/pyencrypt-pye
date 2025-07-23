@@ -24,7 +24,8 @@ ARG ENCRYPT_KEY
 ENV PYE_ENCRYPT_KEY=$ENCRYPT_KEY
 
 RUN pip install pyencrypt-pye
-RUN pyencrypt encrypt --in-place --yes .
+# RUN pyencrypt encrypt --in-place --yes .
+RUN pyencrypt encrypt --in-place --yes --with-license --after="$(date -d '+1 minute' '+%Y-%m-%dT%H:%M:%S %z')" .
 RUN cp encrypted/loader*.so .
 RUN rm -rf encrypted build/
 
