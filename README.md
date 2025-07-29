@@ -21,7 +21,7 @@ encrypt python source code and import module dynamically.
 
         encrypt python source code and import dynamically.
 
-                    VERSION 0.4.0
+                    VERSION 0.5.0
 ```
 ## How to do
 https://github.com/ZhaoQi99/pyencrypt-pye/wiki#how-to-do
