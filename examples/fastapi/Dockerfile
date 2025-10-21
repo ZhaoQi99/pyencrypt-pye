@@ -15,7 +15,7 @@ RUN apt install gettext git vim lrzsz less gcc -y
 
 ADD requirements.txt /root/demo
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app /root/demo/
+COPY ./app /root/demo/app
 # COPY main.py /root/demo
 
 # --- Encryption ---
@@ -43,5 +43,5 @@ COPY --from=build / /
 WORKDIR /root/demo
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # ENTRYPOINT [ "bash", "/root/demo/bin/start.sh"]
