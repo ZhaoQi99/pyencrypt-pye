@@ -2,4 +2,5 @@
 
 This directory contains examples of how to use pyencrypt.
 
-* [`django`](./django): Pyencrypt Django Example
+* [`Django`](./django): Pyencrypt Django Example
+* [`FastAPI`](./fastapi): Pyencrypt FastAPI Example

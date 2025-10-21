@@ -1,0 +1,11 @@
+services:
+  demo1:
+    build: .
+    command: fastapi dev main.py
+    ports:
+      - 8001:8000
+  demo2:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - 8002:8000
