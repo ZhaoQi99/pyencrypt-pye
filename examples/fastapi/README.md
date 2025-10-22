@@ -39,16 +39,16 @@ pyencrypt encrypt --in-place --yes --with-license --after="$(date -d '+1 minute'
 The license checking is implemented as a FastAPI dependency in [`app/dependencies.py`](./app/dependencies.py):
 ```python
 def check_license() -> None:
-	try:
-		import loader
+    try:
+        import loader
 
-		file_loader = loader.EncryptFileLoader("")
-		if file_loader.license is True:
-			file_loader.check()
-	except ModuleNotFoundError:
-		pass
-	except Exception as e:
-		raise HTTPException(status_code=403, detail=str(e))
+        file_loader = loader.EncryptFileLoader("")
+        if file_loader.license is True:
+            file_loader.check()
+    except ModuleNotFoundError:
+        pass
+    except Exception as e:
+        raise HTTPException(status_code=403, detail=str(e))
 ```
 
 ## Notes
