@@ -43,4 +43,6 @@ COPY --from=build / /
 
 WORKDIR /root/demo
 EXPOSE 8000
+
+# CMD [ "gunicorn", "-c", "demo/gunicorn.py", "demo.wsgi" ]
 # ENTRYPOINT [ "bash", "/root/demo/bin/start.sh"]
