@@ -6,7 +6,7 @@ router = APIRouter(prefix="/account", tags=["account"])
 
 
 @router.get("/login/")
-async def login_get(
+async def login(
     username: str = Query(...),
     password: str = Query(...),
     _: None = Depends(check_license),

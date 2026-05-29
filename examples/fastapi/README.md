@@ -48,6 +48,16 @@ def check_license() -> None:
     except Exception as e:
         raise HTTPException(status_code=403, detail=str(e))
 ```
+Then use it in the login handler with `Depends` in [app/routers/login.py](./app/routers/login.py):
+```python
+@router.get("/login/")
+async def login(
+    username: str = Query(...),
+    password: str = Query(...),
+    _: None = Depends(check_license),
+):
+    ...
+```
 
 ## Notes
 * `main.py` should remain unencrypted. 
