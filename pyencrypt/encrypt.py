@@ -75,8 +75,16 @@ def generate_so_file(
     loader_source_path = path / "loader.py"
     loader_source = (
         REMOVE_SELF_IMPORT.sub("", loader_source_path.read_text(encoding="utf-8"))
-        .replace("__private_key = None", f"__private_key = '{private_key}'", 1)
-        .replace("__cipher_key = None", f"__cipher_key = '{cipher_key}'", 1)
+        .replace(
+            "def __get_private_key():\n        return None",
+            "def __get_private_key():\n        return '{}'".format(private_key),
+            1,
+        )
+        .replace(
+            "def __get_cipher_key():\n        return None",
+            "def __get_cipher_key():\n        return '{}'".format(cipher_key),
+            1,
+        )
         .replace("license = None", f"license = {license}", 1)
     )
 

@@ -35,12 +35,18 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
     def __init__(self, path) -> None:
         self.path = path or ""
-        self.__private_key = None
-        self.__cipher_key = None
         self.license = None
         self.license_path = None
         self._init_license_path()
         self.check()
+
+    @staticmethod
+    def __get_private_key():
+        return None
+
+    @staticmethod
+    def __get_cipher_key():
+        return None
 
     def _init_license_path(self) -> None:
         if self.license is False:
@@ -55,6 +61,10 @@ class EncryptFileLoader(abc.SourceLoader, Base):
     def _decrypt_key(cls, cipher_key: str, d: int, n: int):
         return decrypt_key(cipher_key, d, n)
 
+    def _load_aes_key(self):
+        __n, __d = self.__get_private_key().split("O", 1)
+        return self._decrypt_key(self.__get_cipher_key(), int(__d), int(__n))
+
     def check(self) -> bool:
         if self.license is False:
             return False
@@ -62,10 +72,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
         if self.license_path is None:
             raise Exception("Could not find license file.")
 
-        __n, __d = self.__private_key.split("O", 1)
-        check_license(
-            self.license_path, self._decrypt_key(self.__cipher_key, int(__d), int(__n))
-        )
+        check_license(self.license_path, self._load_aes_key())
         return True
 
     def get_filename(self, fullname: str) -> str:
@@ -76,10 +83,7 @@ class EncryptFileLoader(abc.SourceLoader, Base):
 
     def get_data(self, path: _Path) -> bytes:
         try:
-            __n, __d = self.__private_key.split("O", 1)
-            return decrypt_file(
-                Path(path), self._decrypt_key(self.__cipher_key, int(__d), int(__n))
-            )
+            return decrypt_file(Path(path), self._load_aes_key())
         except Exception:
             traceback.print_exc()
             return b""
