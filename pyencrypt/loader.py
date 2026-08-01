@@ -18,6 +18,10 @@ _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
 
 
+def __dir__():
+    return []
+
+
 def _reassemble_key(shards, seed):
     out = bytearray()
     for idx, shard in enumerate(shards):
