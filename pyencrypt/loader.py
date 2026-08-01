@@ -1,9 +1,7 @@
 import linecache
 import os
 import sys
-import traceback
 import types
-from functools import lru_cache
 from importlib import abc, machinery
 from importlib._bootstrap_external import _NamespacePath
 from importlib.machinery import ModuleSpec
@@ -61,7 +59,7 @@ def _make_key_provider(
 
 def _build_loader_class(_get_key):
 
-    class EncryptFileLoader(abc.SourceLoader, Base):
+    class EncryptFileLoader(abc.Loader, Base):
         POSSIBLE_PATH = [
             Path(os.path.expanduser("~")) / ".licenses" / "license.lic",
             Path(os.path.abspath(__file__)).parent / "licenses" / "license.lic",
@@ -101,10 +99,21 @@ def _build_loader_class(_get_key):
 
         def get_data(self, path: _Path) -> bytes:
             try:
-                return decrypt_file(Path(path), _get_key())
+                return Path(path).read_bytes()
             except Exception:
-                traceback.print_exc()
                 return b""
+
+        def exec_module(self, module: types.ModuleType) -> None:
+            try:
+                source = bytearray(decrypt_file(Path(self.path), _get_key()))
+                code = compile(bytes(source), self.path, "exec")
+            except Exception:
+                raise ImportError(f"Cannot load encrypted module: {self.path}")
+            finally:
+                for _i in range(len(source)):
+                    source[_i] = 0
+                del source
+            exec(code, module.__dict__)
 
     return EncryptFileLoader
 
