@@ -42,14 +42,9 @@ def encrypt_key(key: bytes):
     ascii_ls = [ord(x) for x in key.decode()]
     numbers = generate_rsa_number(2048)
     e, n = numbers["e"], numbers["n"]
-    # fill length to be a power of 2
-    length = len(ascii_ls)
-    if length & (length - 1) != 0:
-        length = 1 << length.bit_length()
-        ascii_ls = ascii_ls + [0] * (length - len(ascii_ls))
     cipher_ls = list()
-    # ntt后再用RSA加密
-    for num in ntt(ascii_ls):
+    # 逐字符 RSA 加密
+    for num in ascii_ls:
         cipher_ls.append(pow(num, e, n))
     return "O".join(map(str, cipher_ls)), numbers["d"], numbers["n"]
 
@@ -82,7 +77,7 @@ def generate_so_file(
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
-    need_import_files = ["ntt.py", "aes.py", "decrypt.py", "license.py"]
+    need_import_files = ["aes.py", "decrypt.py", "license.py"]
     for file in need_import_files:
         file_path = path / file
         decrypt_source_ls.append(

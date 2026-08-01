@@ -9,8 +9,7 @@ def decrypt_key(cipher_key: str, d: int, n: int) -> str:
     plain_ls = list()
     for num in map(int, cipher_key.split("O")):
         plain_ls.append(pow(num, d, n))
-    # 去掉intt后末尾多余的0
-    return "".join(map(chr, filter(lambda x: x != 0, intt(plain_ls))))
+    return "".join(map(chr, plain_ls))
 
 
 def _decrypt_file(data: bytes, key: str) -> bytes:
