@@ -18,6 +18,14 @@ _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
 
 
+def _reassemble_key(shards, seed):
+    out = bytearray()
+    for idx, shard in enumerate(shards):
+        mask = (seed + idx * 31) & 0xFF
+        out.extend(b ^ mask for b in shard)
+    return out.decode("utf-8")
+
+
 class Base:
     def __dir__(self) -> Iterable[str]:
         return []

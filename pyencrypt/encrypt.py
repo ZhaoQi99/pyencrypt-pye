@@ -54,6 +54,19 @@ def encrypt_key(key: bytes):
     return "O".join(map(str, cipher_ls)), numbers["d"], numbers["n"]
 
 
+def _shard_key(plain: str, seed: int, parts: int = 4):
+    raw = plain.encode("utf-8")
+    n = len(raw)
+    size = max(1, (n + parts - 1) // parts)
+    chunks = [raw[i : i + size] for i in range(0, n, size)] or [b""]
+    shard_literals = []
+    for idx, chunk in enumerate(chunks):
+        mask = (seed + idx * 31) & 0xFF
+        masked = bytes(b ^ mask for b in chunk)
+        shard_literals.append(repr(masked))
+    return "[" + ", ".join(shard_literals) + "]"
+
+
 def generate_so_file(
     cipher_key: str,
     d: int,
@@ -62,6 +75,10 @@ def generate_so_file(
     license: bool = False,
 ) -> Path:
     private_key = f"{n}O{d}"
+    priv_seed = int.from_bytes(os.urandom(1), "big")
+    cipher_seed = int.from_bytes(os.urandom(1), "big")
+    priv_shards = _shard_key(private_key, priv_seed)
+    cipher_shards = _shard_key(cipher_key, cipher_seed)
     path = Path(os.path.abspath(__file__)).parent
 
     decrypt_source_ls = list()
@@ -77,12 +94,16 @@ def generate_so_file(
         REMOVE_SELF_IMPORT.sub("", loader_source_path.read_text(encoding="utf-8"))
         .replace(
             "def __get_private_key():\n        return None",
-            "def __get_private_key():\n        return '{}'".format(private_key),
+            "def __get_private_key():\n        return _reassemble_key({}, {})".format(
+                priv_shards, priv_seed
+            ),
             1,
         )
         .replace(
             "def __get_cipher_key():\n        return None",
-            "def __get_cipher_key():\n        return '{}'".format(cipher_key),
+            "def __get_cipher_key():\n        return _reassemble_key({}, {})".format(
+                cipher_shards, cipher_seed
+            ),
             1,
         )
         .replace("license = None", f"license = {license}", 1)
