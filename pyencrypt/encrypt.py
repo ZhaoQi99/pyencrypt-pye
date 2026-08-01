@@ -88,16 +88,9 @@ def generate_so_file(
     loader_source = (
         REMOVE_SELF_IMPORT.sub("", loader_source_path.read_text(encoding="utf-8"))
         .replace(
-            "def __get_private_key():\n        return None",
-            "def __get_private_key():\n        return _reassemble_key({}, {})".format(
-                priv_shards, priv_seed
-            ),
-            1,
-        )
-        .replace(
-            "def __get_cipher_key():\n        return None",
-            "def __get_cipher_key():\n        return _reassemble_key({}, {})".format(
-                cipher_shards, cipher_seed
+            "_LOADER_CLASS = _build_loader_class(_make_key_provider(None))",
+            "_LOADER_CLASS = _build_loader_class(_make_key_provider({}, {}, {}, {}))".format(
+                priv_shards, priv_seed, cipher_shards, cipher_seed
             ),
             1,
         )

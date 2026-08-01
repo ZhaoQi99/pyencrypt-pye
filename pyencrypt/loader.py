@@ -17,6 +17,8 @@ from pyencrypt.license import check_license
 _Path = Union[bytes, str]
 sys.dont_write_bytecode = True
 
+ENCRYPT_SUFFIX = ".pye"
+
 
 def __dir__():
     return []
@@ -35,70 +37,79 @@ class Base:
         return []
 
 
-ENCRYPT_SUFFIX = ".pye"
+def _make_key_provider(
+    priv_shards=None,
+    priv_seed=0,
+    cipher_shards=None,
+    cipher_seed=0,
+):
+    if not priv_shards or not cipher_shards:
+        return lambda: None
+
+    private_key = _reassemble_key(priv_shards, priv_seed)
+    cipher_key = _reassemble_key(cipher_shards, cipher_seed)
+    __n, __d = private_key.split("O", 1)
+    aes_key = decrypt_key(cipher_key, int(__d), int(__n))
+
+    del private_key, cipher_key, priv_shards, cipher_shards
+
+    def _get_key():
+        return aes_key
+
+    return _get_key
 
 
-class EncryptFileLoader(abc.SourceLoader, Base):
-    POSSIBLE_PATH = [
-        Path(os.path.expanduser("~")) / ".licenses" / "license.lic",
-        Path(os.path.abspath(__file__)).parent / "licenses" / "license.lic",
-        Path(os.getcwd()) / "licenses" / "license.lic",
-    ]
+def _build_loader_class(_get_key):
 
-    def __init__(self, path) -> None:
-        self.path = path or ""
-        self.license = None
-        self.license_path = None
-        self._init_license_path()
-        self.check()
+    class EncryptFileLoader(abc.SourceLoader, Base):
+        POSSIBLE_PATH = [
+            Path(os.path.expanduser("~")) / ".licenses" / "license.lic",
+            Path(os.path.abspath(__file__)).parent / "licenses" / "license.lic",
+            Path(os.getcwd()) / "licenses" / "license.lic",
+        ]
 
-    @staticmethod
-    def __get_private_key():
-        return None
+        def __init__(self, path) -> None:
+            self.path = path or ""
+            self.license = None
+            self.license_path = None
+            self._init_license_path()
+            self.check()
 
-    @staticmethod
-    def __get_cipher_key():
-        return None
+        def _init_license_path(self) -> None:
+            if self.license is False:
+                return
+            for path in self.POSSIBLE_PATH:
+                if path.exists():
+                    self.license_path = path
+                    break
 
-    def _init_license_path(self) -> None:
-        if self.license is False:
-            return
-        for path in self.POSSIBLE_PATH:
-            if path.exists():
-                self.license_path = path
-                break
+        def check(self) -> bool:
+            if self.license is False:
+                return False
 
-    @classmethod
-    @lru_cache(maxsize=128)
-    def _decrypt_key(cls, cipher_key: str, d: int, n: int):
-        return decrypt_key(cipher_key, d, n)
+            if self.license_path is None:
+                raise Exception("Could not find license file.")
 
-    def _load_aes_key(self):
-        __n, __d = self.__get_private_key().split("O", 1)
-        return self._decrypt_key(self.__get_cipher_key(), int(__d), int(__n))
+            check_license(self.license_path, _get_key())
+            return True
 
-    def check(self) -> bool:
-        if self.license is False:
-            return False
+        def get_filename(self, fullname: str) -> str:
+            return self.path
 
-        if self.license_path is None:
-            raise Exception("Could not find license file.")
+        def get_source(self, fullname: str):
+            return None
 
-        check_license(self.license_path, self._load_aes_key())
-        return True
+        def get_data(self, path: _Path) -> bytes:
+            try:
+                return decrypt_file(Path(path), _get_key())
+            except Exception:
+                traceback.print_exc()
+                return b""
 
-    def get_filename(self, fullname: str) -> str:
-        return self.path
+    return EncryptFileLoader
 
-    def get_source(self, fullname: str):
-        return None
 
-    def get_data(self, path: _Path) -> bytes:
-        try:
-            return decrypt_file(Path(path), self._load_aes_key())
-        except Exception:
-            traceback.print_exc()
-            return b""
+_LOADER_CLASS = _build_loader_class(_make_key_provider(None))
 
 
 class EncryptFileFinder(abc.MetaPathFinder, Base):
@@ -129,7 +140,7 @@ class EncryptFileFinder(abc.MetaPathFinder, Base):
 
         cls._cache_line(file_path)
 
-        loader = EncryptFileLoader(file_path)
+        loader = _LOADER_CLASS(file_path)
         return spec_from_loader(name=fullname, loader=loader, origin="origin-encrypt")
 
     @classmethod
