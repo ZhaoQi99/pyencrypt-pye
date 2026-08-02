@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from pyencrypt.aes import aes_decrypt
-from pyencrypt.ntt import intt
 
 
 def decrypt_key(cipher_key: str, d: int, n: int) -> str:

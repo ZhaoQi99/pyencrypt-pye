@@ -14,7 +14,6 @@ except ImportError as exc:
 
 from pyencrypt.aes import aes_encrypt
 from pyencrypt.generate import generate_rsa_number
-from pyencrypt.ntt import ntt
 
 NOT_ALLOWED_ENCRYPT_FILES = [
     "__init__.py",
