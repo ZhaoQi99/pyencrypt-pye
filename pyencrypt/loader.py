@@ -104,15 +104,17 @@ def _build_loader_class(_get_key):
                 return b""
 
         def exec_module(self, module: types.ModuleType) -> None:
+            source = None
             try:
                 source = bytearray(decrypt_file(Path(self.path), _get_key()))
                 code = compile(bytes(source), self.path, "exec")
             except Exception:
                 raise ImportError(f"Cannot load encrypted module: {self.path}")
             finally:
-                for _i in range(len(source)):
-                    source[_i] = 0
-                del source
+                if source is not None:
+                    for _i in range(len(source)):
+                        source[_i] = 0
+                    del source
             exec(code, module.__dict__)
 
     return EncryptFileLoader
