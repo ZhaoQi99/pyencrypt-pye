@@ -61,6 +61,15 @@ def _shard_key(plain: str, seed: int, parts: int = 4):
     return "[" + ", ".join(shard_literals) + "]"
 
 
+def _wrap_in_closure(inner_source: str) -> str:
+    indented = "\n".join(
+        ("    " + line) if line.strip() else line for line in inner_source.splitlines()
+    )
+    header = "def __dir__():\n    return []\n\n\ndef _bootstrap():\n"
+    footer = "\n\n_bootstrap()\n"
+    return header + indented + footer
+
+
 def generate_so_file(
     cipher_key: str,
     d: int,
@@ -106,12 +115,12 @@ def generate_so_file(
 
     decrypt_source = "\n".join(decrypt_source_ls)
 
+    wrapped_source = _wrap_in_closure(f"{decrypt_source}\n{loader_source}")
+
     # Origin file
     loader_origin_file_path = temp_dir / "loader_origin.py"
     loader_origin_file_path.touch(exist_ok=True)
-    loader_origin_file_path.write_text(
-        f"{decrypt_source}\n{loader_source}", encoding="utf-8"
-    )
+    loader_origin_file_path.write_text(wrapped_source, encoding="utf-8")
 
     minified_code = loader_origin_file_path.read_text(encoding="utf-8")
 
