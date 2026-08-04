@@ -7,7 +7,7 @@ from importlib._bootstrap_external import _NamespacePath
 from importlib.machinery import ModuleSpec
 from importlib.util import spec_from_loader
 from pathlib import Path
-from typing import Iterable, Sequence, Union
+from typing import Iterable, Optional, Sequence, Union
 
 from pyencrypt.decrypt import decrypt_file, decrypt_key
 from pyencrypt.license import check_license
@@ -20,14 +20,6 @@ ENCRYPT_SUFFIX = ".pye"
 
 def __dir__():
     return []
-
-
-def _reassemble_key(shards, seed):
-    out = bytearray()
-    for idx, shard in enumerate(shards):
-        mask = (seed + idx * 31) & 0xFF
-        out.extend(b ^ mask for b in shard)
-    return out.decode("utf-8")
 
 
 class Base:
@@ -44,6 +36,13 @@ def _make_key_provider(
     if not priv_shards or not cipher_shards:
         return lambda: None
 
+    def _reassemble_key(shards, seed):
+        out = bytearray()
+        for idx, shard in enumerate(shards):
+            mask = (seed + idx * 31) & 0xFF
+            out.extend(b ^ mask for b in shard)
+        return out.decode("utf-8")
+
     private_key = _reassemble_key(priv_shards, priv_seed)
     cipher_key = _reassemble_key(cipher_shards, cipher_seed)
     __n, __d = private_key.split("O", 1)
@@ -59,7 +58,7 @@ def _make_key_provider(
 
 def _build_loader_class(_get_key):
 
-    class EncryptFileLoader(abc.Loader, Base):
+    class EncryptFileImporter(abc.MetaPathFinder, abc.Loader, Base):
         POSSIBLE_PATH = [
             Path(os.path.expanduser("~")) / ".licenses" / "license.lic",
             Path(os.path.abspath(__file__)).parent / "licenses" / "license.lic",
@@ -117,52 +116,48 @@ def _build_loader_class(_get_key):
                     del source
             exec(code, module.__dict__)
 
-    return EncryptFileLoader
+        @staticmethod
+        def _cache_line(file_path):
+            stat = os.stat(file_path)
+            size, mtime = stat.st_size, stat.st_mtime
+            linecache.cache[file_path] = (size, mtime, [], file_path)
 
-
-_LOADER_CLASS = _build_loader_class(_make_key_provider(None))
-
-
-class EncryptFileFinder(abc.MetaPathFinder, Base):
-    @staticmethod
-    def _cache_line(file_path):
-        stat = os.stat(file_path)
-        size, mtime = stat.st_size, stat.st_mtime
-        linecache.cache[file_path] = (size, mtime, [], file_path)
-
-    @classmethod
-    def find_spec(
-        cls, fullname: str, path: Sequence[_Path], target: types.ModuleType = None
-    ) -> ModuleSpec:
-        if path:
-            filename = "{}{}".format(fullname.rsplit(".", 1)[-1], ENCRYPT_SUFFIX)
-            if isinstance(path, _NamespacePath):
-                file_path = Path(path._path[0]) / filename
+        def find_spec(
+            self,
+            fullname: str,
+            path: Optional[Sequence[_Path]],
+            target: Optional[types.ModuleType] = None,
+        ) -> Optional[ModuleSpec]:
+            if path:
+                filename = "{}{}".format(fullname.rsplit(".", 1)[-1], ENCRYPT_SUFFIX)
+                if isinstance(path, _NamespacePath):
+                    file_path = Path(path._path[0]) / filename
+                else:
+                    file_path = Path(path[0]) / filename
             else:
-                file_path = Path(path[0]) / filename
-        else:
-            for p in sys.path:
-                file_path = Path(p) / f"{fullname}{ENCRYPT_SUFFIX}"
-                if file_path.exists():
-                    break
-        file_path = file_path.absolute().as_posix()
-        if not os.path.exists(file_path):
-            return None
+                for p in sys.path:
+                    file_path = Path(p) / f"{fullname}{ENCRYPT_SUFFIX}"
+                    if file_path.exists():
+                        break
+            file_path = file_path.absolute().as_posix()
+            if not os.path.exists(file_path):
+                return None
 
-        cls._cache_line(file_path)
+            self._cache_line(file_path)
 
-        loader = _LOADER_CLASS(file_path)
-        return spec_from_loader(name=fullname, loader=loader, origin="origin-encrypt")
+            return spec_from_loader(name=fullname, loader=self.__class__(file_path), origin="origin-encrypt")
 
-    @classmethod
-    def invalidate_caches(cls):
-        pass
+        def invalidate_caches(self):
+            pass
+
+    return EncryptFileImporter
 
 
 # TODO: generate randomly AES Class
 def _install():
     machinery.EXTENSION_SUFFIXES.append(ENCRYPT_SUFFIX)
-    sys.meta_path.insert(0, EncryptFileFinder)
+    _LOADER_CLASS = _build_loader_class(_make_key_provider(None))
+    sys.meta_path.insert(0, _LOADER_CLASS(None))
 
 
 _install()
