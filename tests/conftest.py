@@ -145,3 +145,23 @@ def {function_name}():
     file_path.unlink()
 
     return pkg_path, loader_path
+
+
+@pytest.fixture(scope="class")
+def secret_and_loader(common_loader, tmp_path_factory):
+    key, loader_path = common_loader
+
+    tmp_path = tmp_path_factory.mktemp("secret_and_loader")
+    loader_path = (
+        Path(shutil.copytree(loader_path.parent, tmp_path / "encrypted"))
+        / loader_path.name
+    )
+
+    secret_value = "secret-66"
+    secret_py = tmp_path / "secret.py"
+    secret_py.write_text(f'VALUE = "{secret_value}"\n', encoding="utf-8")
+    secret_pye = secret_py.with_suffix(".pye")
+    encrypt_file(secret_py, key.decode(), new_path=secret_pye)
+    secret_py.unlink()
+
+    return tmp_path, loader_path, secret_value

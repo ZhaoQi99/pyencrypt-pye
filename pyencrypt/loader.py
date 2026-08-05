@@ -27,6 +27,70 @@ class Base:
         return []
 
 
+_DEBUGGER_MODULES = ("pydevd", "debugpy", "_pydevd_bundle", "pydevd_tracing")
+
+
+def _being_traced() -> bool:
+    try:
+        if sys.gettrace() is not None or sys.getprofile() is not None:
+            return True
+    except Exception:
+        return True
+    return False
+
+
+def _tracer_attached() -> bool:
+    # Linux: TracerPid in /proc/self/status is non-zero when traced.
+    try:
+        with open("/proc/self/status", "rb") as fp:
+            for line in fp:
+                if line.startswith(b"TracerPid:"):
+                    return int(line.split(b":", 1)[1].strip()) != 0
+    except Exception:
+        pass
+    # macOS: query kinfo_proc via sysctl and test the P_TRACED flag.
+    try:
+        import ctypes
+        import ctypes.util
+
+        libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+        CTL_KERN, KERN_PROC, KERN_PROC_PID = 1, 14, 1
+        P_TRACED = 0x00000800
+        mib = (ctypes.c_int * 4)(CTL_KERN, KERN_PROC, KERN_PROC_PID, os.getpid())
+        size = ctypes.c_size_t(648)
+        buf = (ctypes.c_byte * 648)()
+        if libc.sysctl(mib, 4, buf, ctypes.byref(size), None, 0) == 0:
+            # p_flag is at offset 32 within struct kinfo_proc on Darwin.
+            p_flag = int.from_bytes(bytes(buf[32:36]), sys.byteorder)
+            return bool(p_flag & P_TRACED)
+    except Exception:
+        pass
+    # Windows: query the debugger state via kernel32.
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        if kernel32.IsDebuggerPresent():
+            return True
+        being_debugged = ctypes.c_int(0)
+        handle = kernel32.GetCurrentProcess()
+        if kernel32.CheckRemoteDebuggerPresent(handle, ctypes.byref(being_debugged)):
+            if being_debugged.value != 0:
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def _debugger_imported() -> bool:
+    return any(name in sys.modules for name in _DEBUGGER_MODULES)
+
+
+def _anti_debug_check() -> None:
+    if _being_traced() or _tracer_attached() or _debugger_imported():
+        raise RuntimeError("Execution environment is not trusted.")
+
+
 def _make_key_provider(
     priv_shards=None,
     priv_seed=0,
@@ -103,6 +167,7 @@ def _build_loader_class(_get_key):
                 return b""
 
         def exec_module(self, module: types.ModuleType) -> None:
+            _anti_debug_check()
             source = None
             try:
                 source = bytearray(decrypt_file(Path(self.path), _get_key()))

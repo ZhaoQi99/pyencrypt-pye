@@ -1,6 +1,8 @@
-from pathlib import Path
-import sys
 import shutil
+import subprocess
+import sys
+import textwrap
+from pathlib import Path
 from typing import Tuple
 
 import pytest
@@ -152,3 +154,62 @@ def test_python_package_with_license_not_found(
 
         assert test_package_4() == "This is package test4"
     assert str(excinfo.value) == "Could not find license file."
+
+
+_DRIVER_TEMPLATE = """\
+import importlib.util, sys
+{setup}
+spec = importlib.util.spec_from_file_location('loader', r'{loader}')
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+try:
+    import secret
+    print('LEAK:' + secret.VALUE)
+except RuntimeError as e:
+    print('BLOCKED:' + str(e))
+except Exception as e:
+    print('OTHER:' + type(e).__name__ + ':' + str(e))
+"""
+
+
+def _run_driver(work_dir, loader_path, setup):
+    """在独立子进程运行驱动脚本，返回其 stdout(去除首尾空白)。"""
+    script = _DRIVER_TEMPLATE.format(
+        setup=textwrap.dedent(setup).strip(), loader=loader_path.as_posix()
+    )
+    driver = work_dir / "_driver.py"
+    driver.write_text(script, encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, driver.as_posix()],
+        cwd=work_dir.as_posix(),
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip(), result.stderr.strip()
+
+
+class TestAntiDebug:
+    def test_clean_environment_decrypts(self, secret_and_loader):
+        work_dir, loader_path, secret_value = secret_and_loader
+        stdout, stderr = _run_driver(work_dir, loader_path, "pass")
+        assert stdout == f"LEAK:{secret_value}", stderr
+
+    def test_imported_debugger_is_blocked(self, secret_and_loader):
+        work_dir, loader_path, _ = secret_and_loader
+        setup = "import types; sys.modules['debugpy'] = types.ModuleType('debugpy')"
+        stdout, stderr = _run_driver(work_dir, loader_path, setup)
+        assert stdout.startswith("BLOCKED:"), stderr
+        assert "not trusted" in stdout
+
+    def test_settrace_is_blocked(self, secret_and_loader):
+        work_dir, loader_path, _ = secret_and_loader
+        stdout, stderr = _run_driver(
+            work_dir, loader_path, "sys.settrace(lambda *a: None)"
+        )
+        assert stdout.startswith("BLOCKED:"), stderr
+        assert "not trusted" in stdout
+
+    def test_pdb_import_only_does_not_block(self, secret_and_loader):
+        work_dir, loader_path, secret_value = secret_and_loader
+        stdout, stderr = _run_driver(work_dir, loader_path, "import pdb")
+        assert stdout == f"LEAK:{secret_value}", stderr
