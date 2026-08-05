@@ -19,6 +19,8 @@ NOT_ALLOWED_ENCRYPT_FILES = [
     "__init__.py",
 ]
 
+MAGIC = b"PYE\x02"
+
 REMOVE_SELF_IMPORT = re.compile(r"^from pyencrypt\.[\s\S]*?$", re.MULTILINE)
 
 
@@ -157,7 +159,7 @@ def encrypt_file(
 ):
     if not can_encrypt(path):
         raise Exception(f"{path.name} can't be encrypted.")
-    encrypted_data = _encrypt_file(path.read_bytes(), key)
+    encrypted_data = MAGIC + _encrypt_file(path.read_bytes(), key)
     if new_path:
         if new_path.suffix != ".pye":
             raise Exception("Encrypted file path must be pye suffix.")
