@@ -3,11 +3,8 @@ from pathlib import Path
 
 import click
 
-from pyencrypt.cli.messages import (
-    DATETIME_FORMATS,
-    FINISH_GENERATE_LICENSE_MSG,
-    INVALID_DATETIME_MSG,
-)
+from pyencrypt.cli.constants import DATETIME_FORMATS
+from pyencrypt.cli.messages import FINISH_GENERATE_LICENSE_MSG, INVALID_DATETIME_MSG
 from pyencrypt.cli.types import CustomParamType
 from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
 

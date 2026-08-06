@@ -62,7 +62,3 @@ Generate loader file {SUCCESS_ANSI}. Your loader file is located in {LOADER_FILE
 FINISH_GENERATE_LICENSE_MSG = f"""
 Generate license file {SUCCESS_ANSI}. Your license file is located in {LICENSE_FILE_NAME}
 """
-
-DATETIME_FORMATS = ["%Y-%m-%dT%H:%M:%S %z", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
-
-ENVVAR_PREFIX = "PYE_ENCRYPT"
