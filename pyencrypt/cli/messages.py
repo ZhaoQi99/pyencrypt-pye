@@ -32,15 +32,23 @@ INVALID_DATETIME_MSG = click.style(
     "Before date must be less than after date.", fg="red"
 )
 
-FINISH_ENCRYPT_MSG = f"""
-Encryption completed {SUCCESS_ANSI}.
+FINISH_ENCRYPT_MSG = f"""\
+Encryption completed {SUCCESS_ANSI}.\
 """
 
-FINISH_ENCRYPT_WITH_LOADER_MSG = f"""
-{FINISH_ENCRYPT_MSG}
+ENCRYPT_SUMMARY_MSG = """\
+🔐 Encrypted {count} files ({size}) in {elapsed}s.
+""".format(
+    count=click.style("{count}", fg="green", bold=True),
+    size=click.style("{size}", fg="cyan"),
+    elapsed=click.style("{elapsed:.2f}", fg="yellow"),
+)
+
+FINISH_ENCRYPT_WITH_LOADER_MSG = f"""\
+{FINISH_ENCRYPT_MSG}\
 Please copy {LOADER_FILE_NAME} into your encrypted directory.
 And then remove `encrypted` directory.
-Finally, add `import loader` at the top of your entry file.
+Finally, add `import loader` at the top of your entry file.\
 """  # noqa: W604
 
 FINISH_DECRYPT_MSG = f"""

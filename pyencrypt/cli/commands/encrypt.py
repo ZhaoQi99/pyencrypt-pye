@@ -6,6 +6,7 @@ import click
 
 from pyencrypt.cli.messages import (
     DATETIME_FORMATS,
+    ENCRYPT_SUMMARY_MSG,
     ENVVAR_PREFIX,
     FINISH_ENCRYPT_MSG,
     FINISH_ENCRYPT_WITH_LOADER_MSG,
@@ -17,6 +18,16 @@ from pyencrypt.cli.types import CustomParamType
 from pyencrypt.encrypt import can_encrypt, encrypt_file, encrypt_key, generate_so_file
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
+
+
+def _format_size(num_bytes: int) -> str:
+    """Human-readable file size."""
+    size = float(num_bytes)
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if size < 1024:
+            return f"{int(size)} B" if unit == "B" else f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{size:.1f} PB"
 
 
 @click.command(name="encrypt")
@@ -114,11 +125,22 @@ def encrypt_command(
             work_dir.exists() and shutil.rmtree(work_dir)
             shutil.copytree(path, work_dir)
         files = set(work_dir.glob("**/*.py"))
+        count = 0
+        total_size = 0
+        start = time.perf_counter()
         with click.progressbar(files, label="🔐 Encrypting") as bar:
             for file in bar:
                 new_path = file.with_suffix(".pye")
                 if can_encrypt(file):
+                    total_size += file.stat().st_size
                     encrypt_file(file, key, True, new_path)
+                    count += 1
+        elapsed = time.perf_counter() - start
+        click.echo(
+            ENCRYPT_SUMMARY_MSG.format(
+                count=count, size=_format_size(total_size), elapsed=elapsed
+            )
+        )
     else:
         raise Exception(f"{path} is not a valid path.")
 
