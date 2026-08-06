@@ -266,6 +266,7 @@ class App:
         def on_progress(ratio, eta=0.0):
             self._queue.put(("progress", (ratio, eta)))
 
+        on_progress(0.0, 0.0)
         try:
             if action == "encrypt":
                 on_log("🔐 Encrypting...")
