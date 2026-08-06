@@ -18,16 +18,7 @@ from pyencrypt.cli.types import CustomParamType
 from pyencrypt.encrypt import can_encrypt, encrypt_file, encrypt_key, generate_so_file
 from pyencrypt.generate import generate_aes_key
 from pyencrypt.license import MAX_DATETIME, MIN_DATETIME, generate_license_file
-
-
-def _format_size(num_bytes: int) -> str:
-    """Human-readable file size."""
-    size = float(num_bytes)
-    for unit in ("B", "KB", "MB", "GB", "TB"):
-        if size < 1024:
-            return f"{int(size)} B" if unit == "B" else f"{size:.1f} {unit}"
-        size /= 1024
-    return f"{size:.1f} PB"
+from pyencrypt.utils import format_size
 
 
 @click.command(name="encrypt")
@@ -138,7 +129,7 @@ def encrypt_command(
         elapsed = time.perf_counter() - start
         click.echo(
             ENCRYPT_SUMMARY_MSG.format(
-                count=count, size=_format_size(total_size), elapsed=elapsed
+                count=count, size=format_size(total_size), elapsed=elapsed
             )
         )
     else:

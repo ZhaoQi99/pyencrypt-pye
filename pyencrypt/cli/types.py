@@ -1,4 +1,3 @@
-import base64
 import ipaddress
 import re
 from typing import Optional
@@ -16,7 +15,9 @@ class KeyParamType(click.ParamType):
     name = "key"
 
     def _check_key(self, key: str) -> bool:
-        return not (len(key) % 4 or len(base64.b64decode(key)) % 16)
+        from pyencrypt.utils import check_key
+
+        return check_key(key)
 
     def convert(self, value, param, ctx) -> str:
         from click.core import ParameterSource  # click>=8

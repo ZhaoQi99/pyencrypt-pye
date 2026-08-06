@@ -47,8 +47,9 @@ Options:
   -h, --help  Show this message and exit.
 
 Commands:
-  decrypt   Decrypt encrypted pye file
-  encrypt   Encrypt your python code
+  decrypt  Decrypt encrypted pye file
+  encrypt  Encrypt your python code
+  gui      Launch the graphical interface.
   license  Generate license file using specified key
   loader   Generate loader file using specified key
 ```
@@ -103,7 +104,27 @@ Options:
   -h, --help      Show this message and exit.
 ```
 
+### Gui
+```shell
+~$ pyencrypt gui -h
+Usage: pyencrypt gui [OPTIONS]
 
+  Launch the graphical interface.
+
+Options:
+  -h, --help  Show this message and exit.
+```
+
+### Gui
+```shell
+~$ pyencrypt gui -h
+Usage: pyencrypt gui [OPTIONS]
+
+  Launch the graphical interface.
+
+Options:
+  -h, --help  Show this message and exit.
+```
 ### License
 
 pyencrypt's loader will search for the license file in the following manner:
@@ -116,9 +137,9 @@ pyencrypt's loader will search for the license file in the following manner:
 
 ```shell
 ~$ pyencrypt license -h
-   Usage: pyencrypt license [OPTIONS]
+Usage: pyencrypt license [OPTIONS]
 
-   Generate license file  using specified key
+  Generate license file using specified key
 
 Options:
   -h, --help                      Show this message and exit.
