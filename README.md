@@ -49,8 +49,8 @@ Options:
 Commands:
   decrypt   Decrypt encrypted pye file
   encrypt   Encrypt your python code
-  generate  Generate loader file using specified key
-  license   Generate license file using specified key
+  license  Generate license file using specified key
+  loader   Generate loader file using specified key
 ```
 
 ### Encrypt
@@ -103,18 +103,6 @@ Options:
   -h, --help      Show this message and exit.
 ```
 
-### Generate
-
-```shell
-~$ pyencrypt generate -h
-Usage: pyencrypt generate [OPTIONS]
-
-  Generate loader file using specified key
-
-Options:
-  -k, --key 🔑  Your encryption key.  [required]
-  -h, --help   Show this message and exit.
-```
 
 ### License
 
@@ -142,6 +130,19 @@ Options:
                                   License is invalid before this date.
   -a, --after [%Y-%m-%dT%H:%M:%S %z|%Y-%m-%d %H:%M:%S|%Y-%m-%d]
                                   License is invalid after this date.
+```
+
+### Loader
+
+```shell
+~$ pyencrypt loader -h
+Usage: pyencrypt loader [OPTIONS]
+
+  Generate loader file using specified key
+
+Options:
+  -k, --key 🔑  Your encryption key.  [required]
+  -h, --help   Show this message and exit.
 ```
 
 ### Shell Completion
