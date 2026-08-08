@@ -85,10 +85,16 @@ from pyencrypt.utils import format_size
     prompt="Are you sure you want to encrypt your python file?",
     help="Automatically answer yes for confirm questions.",
 )
+@click.option(
+    "--django",
+    default=False,
+    help="Enable Django-specific logic",
+    is_flag=True,
+)
 @click.help_option("-h", "--help")
 @click.pass_context
 def encrypt_command(
-    ctx, pathname, replace, key, without_loader, with_license, mac, ipv4, before, after
+    ctx, pathname, replace, key, without_loader, with_license, mac, ipv4, before, after, django
 ):
     """Encrypt your python code"""
     if key is None:
@@ -107,7 +113,7 @@ def encrypt_command(
             new_path = path.with_suffix(".pye")
         else:
             new_path = Path(os.getcwd()) / path.with_suffix(".pye").name
-        encrypt_file(path, key, replace, new_path)
+        encrypt_file(path, key, replace, new_path, django=django)
     elif path.is_dir():
         if replace:
             work_dir = path
@@ -124,7 +130,7 @@ def encrypt_command(
                 new_path = file.with_suffix(".pye")
                 if can_encrypt(file):
                     total_size += file.stat().st_size
-                    encrypt_file(file, key, True, new_path)
+                    encrypt_file(file, key, True, new_path, django=django)
                     count += 1
         elapsed = time.perf_counter() - start
         click.echo(
@@ -144,5 +150,5 @@ def encrypt_command(
         return
 
     cipher_key, d, n = encrypt_key(key.encode())  # 需要放进导入器中
-    loader_extension = generate_so_file(cipher_key, d, n, license=with_license)
+    loader_extension = generate_so_file(cipher_key, d, n, license=with_license, django=django)
     click.echo(FINISH_ENCRYPT_WITH_LOADER_MSG.format(loader_extension.name))
