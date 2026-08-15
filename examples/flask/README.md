@@ -29,7 +29,7 @@ def _check_license() -> str | None:
     try:
         import loader
 
-        file_loader = loader.EncryptFileLoader("")
+        file_loader = loader.EncryptFileImporter("")
         if file_loader.license is True:
             file_loader.check()
     except ModuleNotFoundError:
