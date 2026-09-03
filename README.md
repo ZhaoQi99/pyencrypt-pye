@@ -104,7 +104,7 @@ Options:
   -h, --help      Show this message and exit.
 ```
 
-### Gui
+### GUI
 ```shell
 ~$ pyencrypt gui -h
 Usage: pyencrypt gui [OPTIONS]
@@ -115,16 +115,6 @@ Options:
   -h, --help  Show this message and exit.
 ```
 
-### Gui
-```shell
-~$ pyencrypt gui -h
-Usage: pyencrypt gui [OPTIONS]
-
-  Launch the graphical interface.
-
-Options:
-  -h, --help  Show this message and exit.
-```
 ### License
 
 pyencrypt's loader will search for the license file in the following manner:
